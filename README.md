@@ -8,8 +8,8 @@ Objective is make to "Usually header for C++". I like C++ language! and I want t
 	/* Return char* type.*/
 	variable.c_str();
 	
-  /*This class can use printf*/
-  printf(variable);
+  	/*This class can use printf*/
+ 	 printf(variable);
 	
 	/*Add string*/
 	variable.add("Add string");
@@ -17,7 +17,7 @@ Objective is make to "Usually header for C++". I like C++ language! and I want t
 	
 	/*Add int type value.*/
 	addint(value);
-  variable+=value;
+  	variable+=value;
 	
 	/*find string*/
 	variable.find("string for find");
