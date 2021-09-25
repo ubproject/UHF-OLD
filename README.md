@@ -1,9 +1,9 @@
 # Usually-headers
-Objective is make to "Usually header for C++". I like C++ language! and I want to more study C++ language so made this project. Please tell me how to more good programming for C++ language....
+Objective is make to "Usually header for C++". <br>I like C++ language! and I want to more study C++ language so made this project.<br> Please tell me how to more good programming for C++ language....
 
 # Sanae::str
-  /*Define*/
-  sanae::str variable="";
+  	/*Define*/
+  	sanae::str variable="";
   
 	/* Return char* type.*/
 	variable.c_str();
@@ -27,7 +27,7 @@ Objective is make to "Usually header for C++". I like C++ language! and I want t
 	
 	/*delete string*/
 	variable.clear();//free memory.
-# TestCode(Str型)
+# TestCode(Str class)
  	#include <stdio.h>
 	#include "Sanae.h"
 	int main(){
