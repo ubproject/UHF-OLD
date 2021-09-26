@@ -1,5 +1,5 @@
-# Usually-headers
-Objective is make to "Usually header for C++". <br>I like C++ language! and I want to more study C++ language so made this project.<br> Please tell me how to more good programming for C++ language....
+# Useful-headers
+Objective is make to "useful header for C++". <br>I like C++ language! and I want to more study C++ language so made this project.<br> Please tell me how to more good programming for C++ language....
 
 # Sanae::str
   	/*Define*/
