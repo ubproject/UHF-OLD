@@ -1,6 +1,7 @@
 # Useful-headers
 Objective is make to "useful header for C++". <br>I like C++ language! and I want to more study C++ language so made this project.<br> Please tell me how to more good programming for C++ language....
 
+Version.2
 # Sanae::str
   	/*Define*/
   	sanae::str variable="";
@@ -89,12 +90,10 @@ Objective is make to "useful header for C++". <br>I like C++ language! and I wan
 	sanae::math::division_number(int);//return multiplication of prime number.
 	/*return type is sanae::util::arraylist<int>.*/	
 	
-	sanae::math::average(sanae::str,int, ...);//argument:("int or double",quantity,values...) return average.
-	
 	sanae::math::array_deviation(int,T*);//argument:(quanity,array) return deviation for array.
 	
-	sanae::math::deviation(sanae::str, int, ...);//argument:("int or double",quanity,values...) return deviation.
-	
+	sanae::math correlation(T* d1,T* d2, int);//return Correlation coefficient.
+
 	//alignment to Smallest first.
 	sanae::util::align(sanae::util::arraylist<T>);
 	
