@@ -8,6 +8,7 @@
 namespace sanae {
 /*
 *Copyright 2021 SanaeProject.ALL Rights Reserved.
+* Author Usagi
 */
 	class str {
 	private:
@@ -36,7 +37,7 @@ namespace sanae {
 			/*str1=‘O•û•¶š—ñ str2=‘}“ü•¶š—ñ str3=Œã•û•¶š—ñ*/
 			char* text = (char*)malloc(sizeof(char*)*(position+strlen(to)+strlen(st)+1-(position+len)+1));
 			/*text=str1+str2+str3*/
-			if (str1==NULL&&str3==NULL&&text==NULL) {
+			if (str1==NULL || str3==NULL || text==NULL) {
 				printf("\nMessage:ƒƒ‚ƒŠ‚ÌŠm•Û‚É¸”s‚µ‚Ü‚µ‚½B\n");exit(0);
 			}
 			//str1Ši”[
@@ -66,10 +67,19 @@ namespace sanae {
 		str(const char text[]) {
 			copystring(&st, &text);
 		}
+		/*‰Šú‰»*/
+		str() {
+			const char* text = "";
+			copystring(&st, &text);
+		}
 		virtual void operator =(const char text[])final{
 			if (strcmp(st, text) != 0) {
 				copystring(&st, &text, true, true);
 			}
+		}
+		virtual void operator =(const int d)final {
+			this->operator=("");
+			this->addint(d);
 		}
 		/*‚»‚Ì‘¼ˆ—*/
 		virtual char operator [](unsigned int i){
@@ -137,7 +147,8 @@ namespace sanae {
 			return st;
 		}
 		virtual int find(const char* to) final{
-			if (strstr(st, to)==0) {return -1;}
+			if (strstr(st, to)==0)return -1;
+			if (st == NULL) exit(-1);
 			return strlen(st)-strlen(strstr(st,to));
 		}
 		virtual int replace(const char* from,const char* to) final{
@@ -149,6 +160,24 @@ namespace sanae {
 		}
 		virtual void clear() {
 			free(st);
+		}
+		/*“ü—Íæ“¾
+		mode:0 ‘ã“ü
+		mode:1 ’Ç‹L
+		*/
+		void input(size_t size = 1024, unsigned int mode = 0) {
+			char* t = (char*)malloc(size * sizeof(char*));
+			if (t == NULL) { printf("\nMessage:ƒƒ‚ƒŠ‚ÌŠm•Û‚É¸”s‚µ‚Ü‚µ‚½B\n");exit(0);}
+			scanf_s("%s", t, size);
+			if (mode == 0) {
+				copystring(&st, (const char**)&t, true, true);
+			}
+			else if (mode == 1) {
+				for (int i = 0; i < strlen(t); i++) {
+					this->addchr(*(t + i));
+				}
+			}
+			free(t);
 		}
 	};
 }

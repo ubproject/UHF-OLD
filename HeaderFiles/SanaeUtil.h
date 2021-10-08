@@ -3,9 +3,9 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <typeinfo>
 /*
 *Copyright 2021 SanaeProject.ALL Rights Reserved.
+*Author Usagi
 */
 #define SanaeUtil
 namespace sanae {
@@ -31,13 +31,9 @@ namespace sanae {
 		public:
 			/*要素を返します。
 			ない場合はNULLを返します。
-			sanae::str型の場合は""を返します。
 			*/
 			T operator [](int i) {
 				if (i>=datalen) {
-					if (strcmp(typeid(T).name(),"class sanae::str")==0) {
-						return "";
-					}
 					return NULL;
 				}
 				return data[i];
@@ -56,6 +52,18 @@ namespace sanae {
 					data[number] = to;
 				}
 			}
+
+			//第一引数 配列 第二引数 要素数
+			int to_array(T* arr,size_t count) {
+				if ((this->len())>=count) {
+					for (int i = 0; i < (this->len());i++) {
+						*(arr+i) = *(data + i);
+					}
+					return 1;
+				}
+				return -1;
+			}
+
 			/*
 			指定した配列番号を消去し一段下げます。
 			arraylist<int> t={3,1,2,3};
@@ -68,6 +76,7 @@ namespace sanae {
 				if (number<datalen) {
 					datalen -= 1;
 					T* d1 = (T*)malloc(sizeof(T)*datalen);
+					if (d1 == NULL) { printf("メモリ確保に失敗しました"); exit(0); }
 					for (int i = 0,i2=0; i2 < datalen;i++) {
 						if (i==number) {
 							continue;
@@ -77,6 +86,7 @@ namespace sanae {
 					}
 					free(data);
 					data = (T*)malloc(sizeof(T)*datalen);
+					if (data == NULL) { printf("メモリ確保に失敗しました"); exit(0); }
 					for (int i = 0; i < datalen;i++) {
 						*(data + i) = *(d1 + i);
 					}
@@ -111,6 +121,7 @@ namespace sanae {
 			/*値を追加します*/
 			void add(T d) {
 				T* d_c=(T*)malloc(sizeof(T)* datalen);
+				if (d_c==NULL) {printf("メモリ確保に失敗しました"); exit(0);}
 				for (int i = 0; i < datalen;i++) {
 					*(d_c + i) = *(data+i);
 				}
@@ -126,9 +137,12 @@ namespace sanae {
 			}
 			/*値をすべて削除します*/
 			void clear() {
-				free(data);
-				datalen = 0;
+				if (datalen != 0) {
+					free(data);
+					datalen = 0;
+				}
 			}
+			/*引数を検索して発見した場所の配列番号を返します。*/
 			int find(T t) {
 				for (unsigned int i = 0; i < (this->len());i++) {
 					if (t==this->data[i]) {
@@ -137,8 +151,15 @@ namespace sanae {
 				}
 				return -1;
 			}
+			/*要素数を返します。*/
 			size_t len() {
 				return this->datalen;
+			}
+			/*配列を第一引数個確保し0または第二引数で埋めます。*/
+			void secured(int l,T d=NULL) {
+				for (int i = 0; i < l;i++) {
+					this->add(d);
+				}
 			}
 		};
 		/*渡された配列の中に何個指定した値があるか返します*/
@@ -230,15 +251,26 @@ namespace sanae {
 			D data_cp;
 		public:
 			map(K key, D data) :key_cp(key),data_cp(data){
+				keys.clear();
+				datas.clear();
 				keys.add(key_cp);
 				datas.add(data_cp);
 			}
 			//要素数を返します
 			size_t len() { return keys.len(); }
-			//データを追加します
-			void add(K key,D data) {
-				keys.add(key);
-				datas.add(data);
+			/*データを追加します。
+			返り値:成功:成功した配列番号
+			失敗:-1
+			*/
+			int add(K key,D data) {
+				if (keys.find(key) == -1) {
+					keys.add(key);
+					datas.add(data);
+					return keys.len() - 1;
+				}
+				else {
+					return -1;
+				}
 			}
 			//データが見つからない場合NULL,または""を返します。
 			D get_data(K key) {

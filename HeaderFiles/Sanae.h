@@ -4,6 +4,6 @@
 #include "SanaeMath.h"
 /*
 *Copyright 2021 SanaeProject.ALL Rights Reserved.
+*Author Usagi
 */
 using namespace sanae;
-
