@@ -60,6 +60,21 @@ Version.2
 	*/
 	return 0;
  	}
+ # Else functions(statistics.h)
+	sanae::sigma(unsigned int i, unsigned int N,T* data);
+
+	sanae::sigma(unsigned int i, unsigned int N,sanae::util::arraylist<T> *data);
+	
+	#class
+	sanae::statistics::Regressionline<X,Y> a;
+	
+	a.put((X)data1,(Y)data2);
+	
+	a.learn();
+	
+	a.get((X)data);
+	
+	a.finish();
  # Else functions(SanaeMath.h)
 	sanae::math::digit(int);//return argument digit.
 	
