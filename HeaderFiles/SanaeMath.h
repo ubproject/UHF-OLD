@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #define SanaeMath
+//二乗します
+template<class T>inline T squared(T data) { return(data * data); };
+//絶対値にします
+template<class T>inline T absv(T data) { return data < 0 ? -(data) : data; };
 namespace sanae {
 	/*
 	*Copyright 2021 SanaeProject.ALL Rights Reserved.
@@ -124,6 +128,65 @@ namespace sanae {
 			return d;
 		}
 #ifdef SanaeUtil
+		/*平面ベクトルのクラスです。*/
+		template<typename T>
+		class vector {
+		private:
+			sanae::util::pair<T, T> data;
+		public:
+			/*operator*/
+			T operator [](int number) {
+				return number==0?data.first():data.second();
+			}
+			//+
+			void operator +=(sanae::math::vector<T> _data) {
+				data={ data.first() + _data[0],data.second() + _data[1] };
+			}
+			sanae::util::pair<T, T> operator +(sanae::math::vector<T> _data) {
+				return {data.first()+_data[0],data.second()+_data[1]};
+			}
+			//-
+			void operator -=(sanae::math::vector<T> _data) {
+				data = { data.first() - _data[0],data.second() - _data[1] };
+			}
+			sanae::util::pair<T, T> operator -(sanae::math::vector<T> _data) {
+				return {data.first()-_data[0],data.second()-_data[1]};
+			}
+			//*
+			void operator *=(sanae::math::vector<T> _data) {
+				data = { data.first() * _data[0],data.second() * _data[1] };
+			}
+			sanae::util::pair<T, T> operator *(sanae::math::vector<T> _data) {
+				return {data.first() * _data[0],data.second() * _data[1]};
+			}
+			/*最小値にします。*/
+			void to_minimum() {
+				for (int i = 1; i<=data.first()&&i<= data.second();i++) {
+					if (data.first() % i == 0) {
+						if (data.second() % i == 0) {
+							data.set(data.first() / i, data.second() / i);
+							i = 1;
+						}
+					}
+				}
+			}
+			/*X軸の値を返します。*/
+			T getX() { return data.first(); }
+			/*X軸の値を返します。*/
+			T getY() { return data.second(); }
+			/*ベクトルの成分を代入してください。*/
+			vector(T _d1, T _d2){data.set(_d1,_d2);}
+			/*ベクトルの成分を代入してください。*/
+			vector(sanae::util::pair<T,T> _data):data(_data){}
+			/*代入されたベクトルの2データの成分を自動で計算して代入します。
+			{{ベクトルの始点}{ベクトルの終点}}*/
+			vector(sanae::util::pair<T, T> _data1,sanae::util::pair<T,T> _data2){
+				this->data={_data2.first()-_data1.first(),_data2.second()-_data1.second()};
+			}
+			double volume(bool calculation_root=true) {
+				return calculation_root ? sanae::math::root((data.first()*data.first())+(data.second()*data.second())):(data.first()*data.first())+(data.second()*data.second());
+			}
+		};
 		/*相関係数を返します。*/
 		template<typename T>
 		double correlation(T* d1, T* d2, int count) {

@@ -52,7 +52,6 @@ namespace sanae {
 					data[number] = to;
 				}
 			}
-
 			//第一引数 配列 第二引数 要素数
 			int to_array(T* arr,size_t count) {
 				if ((this->len())>=count) {
@@ -63,7 +62,6 @@ namespace sanae {
 				}
 				return -1;
 			}
-
 			/*
 			指定した配列番号を消去し一段下げます。
 			arraylist<int> t={3,1,2,3};
@@ -200,6 +198,7 @@ namespace sanae {
 				this->t2 = p->second();
 			}
 			pair(T1 d1, T2 d2) :t1(d1), t2(d2) {};
+			pair() { t1 = NULL; t2 = NULL; };
 			void set(T1 d1, T2 d2) { t1 = d1; t2 = d2; }
 			T1 first() { return t1; }
 			T2 second() { return t2; }
@@ -256,6 +255,7 @@ namespace sanae {
 				keys.add(key_cp);
 				datas.add(data_cp);
 			}
+			map() {}
 			//要素数を返します
 			size_t len() { return keys.len(); }
 			/*データを追加します。

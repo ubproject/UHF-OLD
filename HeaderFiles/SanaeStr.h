@@ -173,7 +173,7 @@ namespace sanae {
 				copystring(&st, (const char**)&t, true, true);
 			}
 			else if (mode == 1) {
-				for (int i = 0; i < strlen(t); i++) {
+				for (unsigned int i = 0; i < strlen(t); i++) {
 					this->addchr(*(t + i));
 				}
 			}
