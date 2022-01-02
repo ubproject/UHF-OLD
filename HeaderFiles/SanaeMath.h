@@ -214,30 +214,24 @@ namespace sanae {
 		/*渡された配列の最小値を返します*/
 		template<typename T>
 		T min(int count, T* data) {
-			sanae::util::arraylist<T> data_cpy = { 0,0 };
-			T min = 0;
-			for (int i = 0; i < count; i++) {
-				data_cpy.add(*(data + i));
-				if (i == 0) { min = *(data + i); }
-				if (i > 0 && min > *(data + i)) {
-					min = *(data + i);
+			T min=data[0];
+			for (int i = 1; i < count;i++) {
+				if (min> data[i]) {
+					min = data[i];
 				}
 			}
-			data_cpy.clear();
 			return min;
 		}
-		/*渡されたarraylistの最小値を返します。*/
 		template<typename T>
-		T min(int count, sanae::util::arraylist<T> data) {
-			sanae::util::arraylist<T> data_cpy = { 0,0 };
-			T min = 0;
-			for (unsigned int i = 0; i < count; i++) {
-				data_cpy.add(data[i]);
-				if (i == 0) { min = data[i]; }
-				if (i > 0 && min > data[i]) {min = data[i];}
+		T min(sanae::util::arraylist<T> data) {
+			T min = data[0];
+			for (int i = 1; i < data.len();i++) {
+				if (min>data[i]) {
+					min = data[i];
+				}
 			}
-			data_cpy.clear();
 			return min;
+
 		}
 		/*N次元の2個のデータのユークリッド距離を返します。*/
 		template<typename T>
@@ -304,23 +298,5 @@ namespace sanae {
 			return answer;
 		}
 #endif
-	}
-	namespace util {
-		/*Arraylistを小さい順に整列させます。*/
-		template<typename T>
-		void align(sanae::util::arraylist<T>* data) {
-			sanae::util::arraylist<T> d = { 0, 0 };
-			size_t size = data->len();
-			for (unsigned int i = 0; i < size; i++) {
-				d.add((*data)[i]);
-			}
-			data->clear();
-			*data = { 0,0 };
-			for (unsigned int point = 0; point < size; point++) {
-				data->add(sanae::math::min(d.len(), d));
-				d.del(d.find((*data)[point]));
-			}
-			d.clear();
-		}
 	}
 }

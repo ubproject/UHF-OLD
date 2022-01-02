@@ -3,6 +3,8 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdarg.h>
+
+#define sfree(ptr){free(ptr);ptr=NULL;}
 /*
 *Copyright 2021 SanaeProject.ALL Rights Reserved.
 *Author Usagi
@@ -32,11 +34,8 @@ namespace sanae {
 			/*要素を返します。
 			ない場合はNULLを返します。
 			*/
-			T operator [](int i) {
-				if (i>=datalen) {
-					return NULL;
-				}
-				return data[i];
+			T& operator [](int t) {
+				return *(data + t);
 			}
 			/*
 			指定した配列番号の値を入力された番号に変更します。
@@ -70,7 +69,7 @@ namespace sanae {
 			t[0]=1
 			t[1]=3
 			*/
-			void del(int number) {
+			void del(int number) {	
 				if (number<datalen) {
 					datalen -= 1;
 					T* d1 = (T*)malloc(sizeof(T)*datalen);
@@ -82,13 +81,16 @@ namespace sanae {
 						*(d1 + i2) = *(data + i);
 						i2 += 1;
 					}
-					free(data);
+					sfree(data);
 					data = (T*)malloc(sizeof(T)*datalen);
 					if (data == NULL) { printf("メモリ確保に失敗しました"); exit(0); }
 					for (int i = 0; i < datalen;i++) {
 						*(data + i) = *(d1 + i);
 					}
 				}
+			}
+			~arraylist() {
+				this->clear();
 			}
 			arraylist() {
 				data = NULL;
@@ -99,10 +101,10 @@ namespace sanae {
 			*/
 			arraylist(int count,T...) {
 				if (datalen!=0) {
-					free(data);
+					sfree(data);
 				}
 				if (count==0) {
-					data = NULL;
+					sfree(data);
 				}
 				else {
 					data = (T*)malloc(sizeof(T) * count);
@@ -118,25 +120,33 @@ namespace sanae {
 			}
 			/*値を追加します*/
 			void add(T d) {
-				T* d_c=(T*)malloc(sizeof(T)* datalen);
-				if (d_c==NULL) {printf("メモリ確保に失敗しました"); exit(0);}
-				for (int i = 0; i < datalen;i++) {
-					*(d_c + i) = *(data+i);
+				if (datalen == 0) {
+					datalen += 1;
+					data = (T*)malloc(sizeof(T) * datalen);
+					if (data == NULL) { printf("メモリ確保に失敗しました"); exit(0); }
+					data[datalen - 1] = d;
 				}
-				free(data);
-				datalen += 1;
-				data = (T*)malloc(sizeof(T)*datalen);
-				if(data==NULL){ printf("メモリ確保に失敗しました"); exit(0); }
-				for (int i = 0; i < datalen-1;i++) {
-					*(data + i) = *(d_c+i);
+				else {
+					T* d_c = (T*)malloc(sizeof(T) * datalen);
+					if (d_c == NULL) { printf("メモリ確保に失敗しました"); exit(0); }
+					for (int i = 0; i < datalen; i++) {
+						*(d_c + i) = *(data + i);
+					}
+					sfree(data);
+					datalen += 1;
+					data = (T*)malloc(sizeof(T) * datalen);
+					if (data == NULL) { printf("メモリ確保に失敗しました"); exit(0); }
+					for (int i = 0; i < datalen - 1; i++) {
+						*(data + i) = *(d_c + i);
+					}
+					*(data + (datalen - 1)) = d;
+					sfree(d_c);
 				}
-				*(data + (datalen - 1)) = d;
-				free(d_c);
 			}
 			/*値をすべて削除します*/
 			void clear() {
 				if (datalen != 0) {
-					free(data);
+					sfree(data);
 					datalen = 0;
 				}
 			}
@@ -256,8 +266,14 @@ namespace sanae {
 				datas.add(data_cp);
 			}
 			map() {}
+			~map() {
+				this->clear();
+			}
 			//要素数を返します
 			size_t len() { return keys.len(); }
+			int find(D data) {
+				return datas.find(data);
+			}
 			/*データを追加します。
 			返り値:成功:成功した配列番号
 			失敗:-1
@@ -272,7 +288,7 @@ namespace sanae {
 					return -1;
 				}
 			}
-			//データが見つからない場合NULL,または""を返します。
+			//データが見つからない場合NULLを返します。
 			D get_data(K key) {
 				int number=keys.find(key);
 				if(number==-1){

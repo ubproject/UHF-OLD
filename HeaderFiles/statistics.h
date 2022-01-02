@@ -21,6 +21,9 @@ namespace sanae{
 			sanae::util::arraylist<X> XX;
 			sanae::util::arraylist<double> XY;
 		public:
+			~Regressionline() {
+				this->finish();
+			}
 			void put(X d1, Y d2) {
 				x += d1;
 				y += d2;
@@ -50,11 +53,7 @@ namespace sanae{
 			void formula() {
 				printf("%lf+%lf*X\n",a,b);
 			}
-
 		};
-
-
 	}
 }
 #endif
-

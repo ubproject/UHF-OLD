@@ -5,6 +5,8 @@
 #define SanaeStr
 /*null通常のNULLを使用すると正しく動作しません。*/
 #define null ""
+
+#define sfree(d){free(d);d=NULL;}
 namespace sanae {
 /*
 *Copyright 2021 SanaeProject.ALL Rights Reserved.
@@ -18,7 +20,7 @@ namespace sanae {
 		false=初期化なし*/
 		void copystring(char** to, const char** from, bool mode = true, bool dofree = false) {
 			if (mode) {
-				if (dofree) {free(*to);}
+				if (dofree) {sfree(*to);}
 				(*to) = (char*)malloc(sizeof(*from) * (strlen(*from) + 1));
 			}
 			if(*to==NULL) {
@@ -26,9 +28,6 @@ namespace sanae {
 				exit(0);
 			}
 			strcpy_s(*to, strlen(*from)+1,*from);
-		}
-		int getlen(char **text) {
-			return strlen(*text)+1;
 		}
 		void replace_c(int position,int len,char* to) {
 			char* str1 = (char*)malloc(sizeof(char*) * position);
@@ -52,15 +51,15 @@ namespace sanae {
 				*(str3 + i2) = *(st + i);
 			}
 			*(str3 + (strlen(str3) + 1)) = 0;
-			free(st);
+			sfree(st);
 			st = (char*)malloc(sizeof(char*)*(strlen(str1)+strlen(str2)+strlen(str3)+3));
 			if (st == NULL) { printf("\nMessage:メモリの確保に失敗しました。\n"); exit(0); }
 			copystring(&st,(const char**)&str1,false);
 			strcat_s(st, strlen(str1) + strlen(str2) + strlen(str3) + 3,str2);
 			strcat_s(st, strlen(str1) + strlen(str2) + strlen(str3) + 3, str3); 
-			if (position>0) {free(str1);}//0の場合エラーが起きるため1以上の場合許可
-			free(str2);
-			free(str3);
+			if (position>0) {sfree(str1);}//0の場合エラーが起きるため1以上の場合許可
+			sfree(str2);
+			sfree(str3);
 		}
 	public:
 		/*初期化*/
@@ -72,86 +71,93 @@ namespace sanae {
 			const char* text = "";
 			copystring(&st, &text);
 		}
+		~str() {
+			this->clear();
+		}
+		size_t len() {
+			return strlen(st);
+		}
 		virtual void operator =(const char text[])final{
 			if (strcmp(st, text) != 0) {
 				copystring(&st, &text, true, true);
 			}
 		}
 		virtual void operator =(const int d)final {
-			this->operator=("");
 			this->addint(d);
 		}
+		virtual void operator =(sanae::str d) final{
+			this->add(d.c_str());
+		}
 		/*その他処理*/
-		virtual char operator [](unsigned int i){
-			if ((strlen(st)+1)<i) {return NULL;}
-			return st[i];
+		char& operator [](int t) {
+			return *(st+t);
 		}
-		virtual void operator +=(const char* t){
-			this->add(&(*t));
+		void operator +=(const char* t){
+			this->add(t);
 		}
-		virtual void operator +=(int i){
+		void operator +=(int i){
 			this->addint(i);
 		}
 		/*if*/
-		virtual bool operator ==(const char text[]){
+		bool operator ==(const char text[]){
 			if (strcmp(st, text) == 0) { return 1; }
 			return 0;
 		}
-		virtual bool operator ==(str t){
+		bool operator ==(str t){
 			if (strcmp(st, t.c_str()) == 0) { return 1; }
 			return 0;
 		}
-		virtual bool operator !=(const char text[]){
+		bool operator !=(const char text[]){
 			if (strcmp(st, text) != 0) { return 1; }
 			return 0;
 		}
-		virtual bool operator !=(str t){
+		bool operator !=(str t){
 			if (strcmp(st, t.c_str()) != 0) { return 1; }
 			return 0;
 		}
 		/*変換関数*/
-		virtual operator const char* () {
+		operator const char* () {
 			return st;
 		}
-		virtual operator char* (){
+		operator char* (){
 			return st;
 		}
-		virtual operator int(){return atoi(st);}
+		operator int(){return atoi(st);}
 		/*char*型で返す*/
-		virtual const char* c_str() final{
+		const char* c_str(){
 			return st;
 		}
 		/*文字列追加*/
-		virtual char* addchr(char d) {
-			char buf[12];
-			snprintf(buf, 12, "%c", d);
+		char* addchr(char d){
+			char buf[4];
+			snprintf(buf, 4, "%c", d);
 			add(buf);
 			return st;
 		}
-		virtual char* add(const char* text) final{
-			char* copyst = (char*)malloc(sizeof(char*)*getlen(&st));
+		char* add(const char* text){
+			char* copyst = (char*)malloc(sizeof(char*)*(strlen(st)+1));
 			if (copyst == NULL) { printf("\nMessage:メモリの確保に失敗しました。\n"); exit(0); }
 			copystring(&copyst,(const char**)&st);
-			free(st);
-			st = (char*)malloc(sizeof(char*)*(strlen(copyst)+strlen(text)+2));
+			sfree(st);
+			st = (char*)malloc(sizeof(char*)*(strlen(copyst)+strlen(text)+1));
 			copystring(&st,(const char**)&copyst,false);
 			if(st==NULL){ printf("\nMessage:メモリの確保に失敗しました。\n"); exit(0); }
 			strcat_s(st, strlen(copyst) + strlen(text) + 2,text);
-			free(copyst);
+			sfree(copyst);
 			return st;
 		}
-		virtual char* addint(const int i) final{
-			char buf[12];
-			snprintf(buf, 12, "%d", i);
+		char* addint(const int i){
+			char buf[4];
+			snprintf(buf, 4, "%d", i);
 			add(buf);
 			return st;
 		}
-		virtual int find(const char* to) final{
+		int find(const char* to){
 			if (strstr(st, to)==0)return -1;
-			if (st == NULL) exit(-1);
+			if (st == NULL) return -1;
 			return strlen(st)-strlen(strstr(st,to));
 		}
-		virtual int replace(const char* from,const char* to) final{
+		int replace(const char* from,const char* to){
 			const int position = this->find(from);
 			if (position == -1) { return -1; }
 			const int len = strlen(from);
@@ -159,7 +165,14 @@ namespace sanae {
 			return 0;
 		}
 		virtual void clear() {
-			free(st);
+			sfree(st);
+		}
+		//指定したバイト数確保&すべてのデータを消去します。(calloc)
+		virtual void secure(unsigned int byte, bool clean = true) {
+			if (clean) {
+				sfree(st);
+			}
+			st = (char*)calloc(byte,sizeof(char*));
 		}
 		/*入力取得
 		mode:0 代入
@@ -177,7 +190,7 @@ namespace sanae {
 					this->addchr(*(t + i));
 				}
 			}
-			free(t);
+			sfree(t);
 		}
 	};
 }
