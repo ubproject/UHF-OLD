@@ -1,5 +1,6 @@
 #pragma once
-#define H_SANAE
+#ifndef INCLUDE_GUARD_SANAE_H
+#define INCLUDE_GUARD_SANAE_H
 #include "SanaeStr.h"
 #include "SanaeUtil.h"
 #include "SanaeMath.h"
@@ -11,3 +12,4 @@
 *Author Usagi
 */
 using namespace sanae;
+#endif

@@ -112,22 +112,21 @@ namespace sanae {
 			}
 			return true;
 		}
+#if defined(INCLUDE_GUARD_SANAEUTIL_H) && defined(_VECTOR_)
 		/*N次元の2個のデータのユークリッド距離を返します。*/
 		template<typename T>
 		double euclidean(T* data1, T* data2, int count) {
-			sanae::util::arraylist<T> datas = { 0,0 };
+			std::vector<T> datas;
 			for (unsigned int i = 0; i < count; i++) {
-			datas.add(data1[i] - data2[i]);
+			datas.push_back(data1[i] - data2[i]);
 			}
 			double d = 0;
 			for (unsigned int i = 0; i < datas.len(); i++) {
 				d += datas[i] * datas[i];
 			}
-			datas.clear();
 			d = sanae::math::root(d);
 			return d;
 		}
-#ifdef SanaeUtil
 		/*平面ベクトルのクラスです。*/
 		template<typename T>
 		class vector {
@@ -223,9 +222,9 @@ namespace sanae {
 			return min;
 		}
 		template<typename T>
-		T min(sanae::util::arraylist<T> data) {
+		T min(std::vector<T> data) {
 			T min = data[0];
-			for (int i = 1; i < data.len();i++) {
+			for (int i = 1; i < data.size();i++) {
 				if (min>data[i]) {
 					min = data[i];
 				}
@@ -235,15 +234,12 @@ namespace sanae {
 		}
 		/*N次元の2個のデータのユークリッド距離を返します。*/
 		template<typename T>
-		double euclidean(sanae::util::arraylist<T> data1, sanae::util::arraylist<T> data2) {
-			sanae::util::arraylist<T> datas = { 0,0 };
+		double euclidean(std::vector<T> data1,std::vector<T> data2) {
+			std::vector<T> datas = { 0,0 };
 			if (data1.len() == data2.len()) {
-				for (int i = 0; i < data1.len(); i++) {datas.add(data1[i] - data2[i]);}
+				for (int i = 0; i < data1.len(); i++) {datas.push_back(data1[i] - data2[i]);}
 				double d = 0;
 				for (int i = 0; i < datas.len(); i++) {d += datas[i] * datas[i];}
-				datas.clear();
-				data1.clear();
-				data2.clear();
 				d = sanae::math::root(d);
 				return d;
 			}
@@ -277,18 +273,18 @@ namespace sanae {
 			return answer;
 		}
 		/*入力された値の素数の組み合わせを返します*/
-		sanae::util::arraylist<int> division_number(int number) {
-			sanae::util::arraylist<int> answer = { 0,0 };
+		std::vector<int> division_number(int number) {
+			std::vector<int> answer;
 			if (is_primenumber(number)) {
-				answer.add(number);
+				answer.push_back(number);
 				return answer;
 			}
 			sanae::util::pair<int, int> test = { 0,number };
 			for (;;) {
 				test = division_number_parts(test.second());
-				answer.add(test.first());
+				answer.push_back(test.first());
 				if (is_primenumber(test.second())) {
-					answer.add(test.second());
+					answer.push_back(test.second());
 					break;
 				}
 				if (test.second() == 0) {

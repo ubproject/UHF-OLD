@@ -1,5 +1,6 @@
 #pragma once
-
+#ifndef INCLUDE_GUARD_SANAENET_H
+#define INCLUDE_GUARD_SANAENET_H
 #include <winsock2.h>
 #include <WS2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")
@@ -12,7 +13,7 @@ https://qiita.com/parallax_kk/items/9e877542fecb4087729f
 https://codehero.jp/c%2B%2B/8032080/how-to-convert-char-to-wchar-t
 https://c-lang.net/%e3%83%9e%e3%83%ab%e3%83%81%e3%83%90%e3%82%a4%e3%83%88%e6%96%87%e5%ad%97%e5%88%97%e3%82%92%e3%83%af%e3%82%a4%e3%83%89%e6%96%87%e5%ad%97%e5%88%97%e3%81%ab%e5%a4%89%e6%8f%9b%e3%81%99%e3%82%8b-2/index.html
 */
-#ifdef H_SANAE
+#ifdef INCLUDE_GUARD_SANAESTR_H
 //inet_addr‚ðŽg—p‚·‚é—p
 #pragma warning(disable:4996) 
 namespace sanae {
@@ -225,4 +226,5 @@ namespace sanae {
 		};
 	}
 }
+#endif
 #endif

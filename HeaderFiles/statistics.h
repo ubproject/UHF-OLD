@@ -1,14 +1,10 @@
 #pragma once
-#ifdef H_SANAE
+#ifndef INCLUDE_GUARD_STATISTICS_H
+#define INCLUDE_GUARD_STATISTICS_H
 namespace sanae{
 	template<typename T> inline T sigma(unsigned int i, unsigned int N,T* data) {
 		T d = 0;
 		for (i-=1; i < N; i++) { d += data[i]; }
-		return d;
-	}
-	template<typename T> inline T sigma(unsigned int i, unsigned int N,sanae::util::arraylist<T> *data) {
-		T d = 0;
-		for (i -= 1; i < N; i++) { d += data[i]; }
 		return d;
 	}
 	namespace statistics {
@@ -18,8 +14,8 @@ namespace sanae{
 			double a=0, b=0;
 			X x = 0;
 			Y y=0;
-			sanae::util::arraylist<X> XX;
-			sanae::util::arraylist<double> XY;
+			std::vector<X> XX;
+			std::vector<double> XY;
 		public:
 			~Regressionline() {
 				this->finish();
@@ -27,16 +23,16 @@ namespace sanae{
 			void put(X d1, Y d2) {
 				x += d1;
 				y += d2;
-				XX.add(squared(d1));
-				XY.add(d1 * d2);
+				XX.push_back(squared(d1));
+				XY.push_back(d1 * d2);
 			}
 			void learn() {
 				double xx=0, xy=0;
-				int N = XX.len();
-				for (unsigned int i = 0; i < XX.len();i++) {
+				int N = XX.size;
+				for (unsigned int i = 0; i < XX.size();i++) {
 					xx += XX[i];
 				}
-				for (unsigned int i = 0; i < XX.len(); i++) {
+				for (unsigned int i = 0; i < XX.size(); i++) {
 					xy += XY[i];
 				}
 				a = (xx * y - xy * x )/(N * xx - squared(x));

@@ -1,15 +1,14 @@
 #pragma once
+#ifndef INCLUDE_GUARD_SANAEUTIL_H
+#define INCLUDE_GUARD_SANAEUTIL_H
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
 #include <stdarg.h>
-
-#define sfree(ptr){free(ptr);ptr=NULL;}
 /*
 *Copyright 2021 SanaeProject.ALL Rights Reserved.
 *Author Usagi
 */
-#define SanaeUtil
 namespace sanae {
 	namespace util {
 		/*
@@ -26,30 +25,33 @@ namespace sanae {
 
 		sanae::util::arraylist<int> test={入れる個数,値...};
 		*/
-		template <typename T>class arraylist {
+		template <typename T>class [[deprecated("この型はSanae::str型や配列型で使用するとバグが発生してしまています。原因が特定・改良できるまで使用しないでください")]] arraylist {
 		private:
 			T* data = NULL;
 			int datalen = 0;
+			//callocで確保します。 成功 true 失敗:false
+			int _calloc(T** to, size_t count, bool dofree = true) {
+				if (count == 0)return false;
+				if (dofree)sfree(*to);
+				*to = (T*)calloc(count, sizeof(T*));
+				return *to == NULL ? false : true;
+			}
+			//freeした後ポインタをNULLにします
+			template<typename T>
+			void sfree(T d) { free(d); d = NULL; }
+			//errorを返します
+			[[noreturn]] void mem_err() {
+				throw std::runtime_error("メモリ確保に失敗しました。");
+			}
 		public:
 			/*要素を返します。
 			ない場合はNULLを返します。
 			*/
 			T& operator [](int t) {
-				return *(data + t);
-			}
-			/*
-			指定した配列番号の値を入力された番号に変更します。
-			arraylist<int> test={3,1,2,3};
-			test.chenge(1,9);//test[1]の値を9にする
-			結果:
-			test[0]=1;
-			test[1]=9;
-			test[2]=3;
-			*/
-			void chenge(int number,T to) {
-				if (number<datalen) {
-					data[number] = to;
+				if(datalen<=t){
+					throw std::out_of_range("範囲外の値にアクセスしようとしました。");
 				}
+				return *(data + t);
 			}
 			//第一引数 配列 第二引数 要素数
 			int to_array(T* arr,size_t count) {
@@ -72,8 +74,8 @@ namespace sanae {
 			void del(int number) {	
 				if (number<datalen) {
 					datalen -= 1;
-					T* d1 = (T*)malloc(sizeof(T)*datalen);
-					if (d1 == NULL) { printf("メモリ確保に失敗しました"); exit(0); }
+					T* d1 = NULL;
+					if (!_calloc(&d1, datalen, false))mem_err();
 					for (int i = 0,i2=0; i2 < datalen;i++) {
 						if (i==number) {
 							continue;
@@ -82,8 +84,8 @@ namespace sanae {
 						i2 += 1;
 					}
 					sfree(data);
-					data = (T*)malloc(sizeof(T)*datalen);
-					if (data == NULL) { printf("メモリ確保に失敗しました"); exit(0); }
+					data = NULL;
+					if (!_calloc(&data, datalen, false))mem_err();
 					for (int i = 0; i < datalen;i++) {
 						*(data + i) = *(d1 + i);
 					}
@@ -91,6 +93,14 @@ namespace sanae {
 			}
 			~arraylist() {
 				this->clear();
+			}
+			/*コピーコンストラクタ*/
+			arraylist(const arraylist& d) {
+				this->clear();
+				if (!_calloc(&data, d.datalen, false))mem_err();
+				for (int i = 0; i < d.datalen; i++) {
+					this->data[i] = d.data[i]; 
+				}
 			}
 			arraylist() {
 				data = NULL;
@@ -107,8 +117,7 @@ namespace sanae {
 					sfree(data);
 				}
 				else {
-					data = (T*)malloc(sizeof(T) * count);
-					if (data == NULL) { printf("メモリ確保に失敗しました"); exit(0); }
+					if (!_calloc(&data, count, false))mem_err();
 					va_list var1;
 					va_start(var1, count);
 					for (int i = 0; i < count; i++) {
@@ -122,20 +131,19 @@ namespace sanae {
 			void add(T d) {
 				if (datalen == 0) {
 					datalen += 1;
-					data = (T*)malloc(sizeof(T) * datalen);
-					if (data == NULL) { printf("メモリ確保に失敗しました"); exit(0); }
+					data = NULL;
+					if (!_calloc(&data, datalen, false))mem_err();
 					data[datalen - 1] = d;
-				}
-				else {
-					T* d_c = (T*)malloc(sizeof(T) * datalen);
-					if (d_c == NULL) { printf("メモリ確保に失敗しました"); exit(0); }
+				}else {
+					T* d_c = NULL;
+					if (!_calloc(&d_c, datalen, false))mem_err();
 					for (int i = 0; i < datalen; i++) {
 						*(d_c + i) = *(data + i);
 					}
 					sfree(data);
 					datalen += 1;
-					data = (T*)malloc(sizeof(T) * datalen);
-					if (data == NULL) { printf("メモリ確保に失敗しました"); exit(0); }
+					data = NULL;
+					if (!_calloc(&data, datalen, false))mem_err();
 					for (int i = 0; i < datalen - 1; i++) {
 						*(data + i) = *(d_c + i);
 					}
@@ -145,10 +153,8 @@ namespace sanae {
 			}
 			/*値をすべて削除します*/
 			void clear() {
-				if (datalen != 0) {
-					sfree(data);
-					datalen = 0;
-				}
+				sfree(data);
+				datalen = 0;
 			}
 			/*引数を検索して発見した場所の配列番号を返します。*/
 			int find(T t) {
@@ -175,17 +181,6 @@ namespace sanae {
 			int c = 0;
 			for (int i = 0; i < len; i++) {
 				if (*(array + i) == to) {
-					c += 1;
-				}
-			}
-			return c;
-		}
-		/*渡された配列の中に何個指定した値があるか返します*/
-		template<class T> int count(sanae::util::arraylist<T> array,T to) {
-			int len = array.len();
-			int c = 0;
-			for (int i = 0; i < len; i++) {
-				if (array[i] == to) {
 					c += 1;
 				}
 			}
@@ -253,8 +248,8 @@ namespace sanae {
 		*/
 		template<typename K, typename D>class map {
 		private:
-			sanae::util::arraylist<K> keys;
-			sanae::util::arraylist<D> datas;
+			std::vector<K> keys;
+			std::vector<D> datas;
 			/*一時保存用変数*/
 			K key_cp;
 			D data_cp;
@@ -262,8 +257,8 @@ namespace sanae {
 			map(K key, D data) :key_cp(key),data_cp(data){
 				keys.clear();
 				datas.clear();
-				keys.add(key_cp);
-				datas.add(data_cp);
+				keys.push_back(key_cp);
+				datas.push_back(data_cp);
 			}
 			map() {}
 			~map() {
@@ -271,36 +266,57 @@ namespace sanae {
 			}
 			//要素数を返します
 			size_t len() { return keys.len(); }
-			int find(D data) {
-				return datas.find(data);
+			//見つかった場合true 見つからなかった場合false
+			bool find(D data) {
+				auto found = std::find(datas.cbegin(),datas.cend(),data);
+				if (found!=datas.cend()) {
+					return true;
+				}
+				return false;
 			}
 			/*データを追加します。
 			返り値:成功:成功した配列番号
 			失敗:-1
 			*/
 			int add(K key,D data) {
-				if (keys.find(key) == -1) {
-					keys.add(key);
-					datas.add(data);
-					return keys.len() - 1;
-				}
-				else {
+				auto found = std::find(keys.cbegin(), keys.cend(), key);
+				if (found == keys.cend()) {
+					keys.push_back(key);
+					datas.push_back(data);
+					return keys.size() - 1;
+				}else {
 					return -1;
 				}
 			}
 			//データが見つからない場合NULLを返します。
 			D get_data(K key) {
-				int number=keys.find(key);
-				if(number==-1){
+				auto found = std::find(keys.cbegin(), keys.cend(), key);
+				if (found == keys.cend()) {
 					return NULL;
+				}
+				int number = 0;
+				for (int i = 0; i < keys.size();i++) {
+					if (key==keys[i]) {
+						number = i;
+						break;
+					}
 				}
 				return datas[number];
 			}
 			//keyのデータを消去します。
 			void del_data(K key) {
-				int number = keys.find(key);
-				keys.del(number);
-				datas.del(number);
+				auto found = std::find(keys.cbegin(), keys.cend(), key);
+				if (found != keys.cend()) {
+					int number = 0;
+					for (int i = 0; i < keys.size(); i++) {
+						if (key == keys[i]) {
+							number = i;
+							break;
+						}
+					}
+					keys.erase(keys.begin()+number);
+					datas.erase(datas.begin()+number);
+				}
 			}
 			//データをクリアします。
 			void clear() {
@@ -343,3 +359,4 @@ namespace sanae {
 		}
 	}
 }
+#endif
