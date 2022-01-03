@@ -102,7 +102,7 @@ namespace sanae {
 			this->addint(d);
 		}
 		/*その他処理*/
-		char& operator [](int t) {
+		char& operator [](unsigned int t) {
 			if (strlen(st)<=t) {
 				throw std::out_of_range("範囲外の値にアクセスしようとしました。");
 			}

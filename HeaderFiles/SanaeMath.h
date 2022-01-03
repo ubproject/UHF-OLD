@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <vector>
 #define SanaeMath
 //二乗します
 template<class T>inline T squared(T data) { return(data * data); };
@@ -112,7 +113,7 @@ namespace sanae {
 			}
 			return true;
 		}
-#if defined(INCLUDE_GUARD_SANAEUTIL_H) && defined(_VECTOR_)
+#ifdef INCLUDE_GUARD_SANAEUTIL_H
 		/*N次元の2個のデータのユークリッド距離を返します。*/
 		template<typename T>
 		double euclidean(T* data1, T* data2, int count) {

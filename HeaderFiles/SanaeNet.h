@@ -3,6 +3,8 @@
 #define INCLUDE_GUARD_SANAENET_H
 #include <winsock2.h>
 #include <WS2tcpip.h>
+#include <stdexcept>
+#include <exception>
 #pragma comment(lib, "Ws2_32.lib")
 
 /*参考サイト
@@ -17,6 +19,7 @@ https://c-lang.net/%e3%83%9e%e3%83%ab%e3%83%81%e3%83%90%e3%82%a4%e3%83%88%e6%96%
 //inet_addrを使用する用
 #pragma warning(disable:4996) 
 namespace sanae {
+	//08039234183
 	/*
 	*Copyright 2021 SanaeProject.ALL Rights Reserved.
 	* Author Usagi
@@ -49,18 +52,15 @@ namespace sanae {
 			const char* GetMyIp() {
 				WSADATA wsadata;
 				if (WSAStartup(MAKEWORD(1, 1), &wsadata) != 0) {
-					puts("[ERROR]IPアドレス取得に失敗しました。\n");
-					exit(0);
+					throw std::runtime_error("WSAStartupに失敗しました。");
 				}
 				char hostname[256];
 				if (gethostname(hostname, sizeof(hostname)) != 0) {
-					puts("[ERROR]IPアドレス取得に失敗しました。\n");
-					exit(0);
+					throw std::runtime_error("IPアドレス取得に失敗しました。");
 				}
 				HOSTENT* hostend = gethostbyname(hostname);
 				if (hostend == NULL) {
-					puts("[ERROR]IPアドレス取得に失敗しました。\n");
-					exit(0);
+					throw std::runtime_error("IPアドレス取得に失敗しました。");
 				}
 				IN_ADDR inaddr;
 				memcpy(&inaddr, hostend->h_addr_list[0], 4);
@@ -76,8 +76,7 @@ namespace sanae {
 				WSACleanup();
 				int error=WSAStartup(MAKEWORD(2, 0), &wsaData);
 				if (error != 0) {
-					printf("Message:ERROR\nCode:%d\n", error);
-					exit(0);
+					throw std::runtime_error("WSAStartupに失敗しました。");
 				}
 				sock = socket(AF_INET, SOCK_DGRAM, 0);
 				addr.sin_family = AF_INET;
@@ -107,7 +106,7 @@ namespace sanae {
 				_bind = false;
 				char* buf = (char*)calloc(size, sizeof(char*));
 				if (buf==NULL) {
-					if (buf == NULL) { printf("[Message]メモリの確保に失敗しました。"); exit(0); }
+					if (buf == NULL) { throw std::runtime_error("メモリ確保に失敗しました。"); }
 				}
 				recv(sock, buf, size, 0);
 				return buf;
@@ -139,8 +138,7 @@ namespace sanae {
 				started = true;
 				int error = WSAStartup(MAKEWORD(2, 0), &wsaData);
 				if (error!=0) {
-					printf("Message:ERROR\nCode:%d\n", error);
-					exit(0);
+					throw std::runtime_error("WSAStartupに失敗しました。");
 				}
 				sock0 = socket(AF_INET, SOCK_STREAM, 0);
 				addr.sin_family = AF_INET;
@@ -163,12 +161,11 @@ namespace sanae {
 				send(sock, data, strlen(data)+1, 0);
 			}
 			//受信
-			sanae::str recv_tcp(size_t datasize) {
+			char* recv_tcp(size_t datasize) {
 				char* d = (char*)calloc(datasize,sizeof(char*));
-				if (d == NULL) { printf("[Message]メモリの確保に失敗しました。"); exit(0); }
+				if (d == NULL) { throw std::runtime_error("メモリ確保に失敗しました。"); }
 				int n = recv(sock,d, datasize, 0);
-				data.add(d);
-				return data;
+				return d;
 			}
 			//終了
 			void end() {
@@ -190,8 +187,7 @@ namespace sanae {
 				started = true;
 				int error=WSAStartup(MAKEWORD(2, 0), &wsaData);
 				if (error!=0) {
-					printf("Message:ERROR\nCode:%d\n",error);
-					exit(0);
+					throw std::runtime_error("WSAStartupに失敗しました。");
 				}
 				sock = socket(AF_INET, SOCK_STREAM, 0);
 				server.sin_family = AF_INET;
@@ -210,10 +206,11 @@ namespace sanae {
 				connect(sock, (struct sockaddr*)&server, sizeof(server));
 			}
 			//受信します
-			sanae::str recv_tcp(size_t datasize) {
-				data.secure(datasize);
-				int n = recv(sock, data, datasize, 0);
-				return data;
+			char* recv_tcp(size_t datasize) {
+				char* d = (char*)calloc(datasize, sizeof(char*));
+				if (d == NULL) { throw std::runtime_error("メモリ確保に失敗しました。"); }
+				int n = recv(sock, d, datasize, 0);
+				return d;
 			}
 			//送信します
 			void send_tcp(const char* data) {
