@@ -10,15 +10,10 @@ Version.2
 	variable.c_str();
 	
   	/*This class can use printf*/
- 	 printf(variable);
+ 	 printf(variable.c_str());
 	
 	/*Add string*/
 	variable.add("Add string");
-	variable+="Add string";
-	
-	/*Add int type value.*/
-	addint(value);
-  	variable+=value;
 	
 	/*find string*/
 	variable.find("string for find");
@@ -27,39 +22,43 @@ Version.2
 	variable.replace("string to replace","string");
 	
 	/*delete string*/
-	variable.clear();//free memory.
-# TestCode(Str class)
- 	#include <stdio.h>
-	#include "Sanae.h"
-	int main(){
-	sanae::str test = "SanaeProject";//define
-	sanae::str test2 = "Sanae San";//define
-
-	test2.replace(" San","Project");//replace " San" to "Project"
+	variable.clear();//free memory
 	
-	test.addint(2021);//insert int type
-	test2.addint(2021);
+	variable.~str();//Destructor
 
-	if (test==test2) {//compare TRUE
-		printf("same\n");
-	}
+ # Else functions(SanaeNet.h)
+	#class
+	
+	・sanae::UDP::udp variable(portnumber,"IPv4 Address");
+	
+	variable.send_udp("send text");
+	
+	variable.bind_udp();
 
-	test2.add("Plus");//insert "Plus"
+	variable.recv_udp((size_t)1024);//return char*
+	
+	variable.~udp();//Destructor
+	
+	・sanae::TCP::server variable(portnumber);
+	
+	test.accept_tcp();
+	
+	test.send_tcp("send text");
+	
+	test.recv_tcp(1024);//return char*
+	
+	test.~server();//destructor
+	
+	・sanae::TCP:: client
 
-	if (test!=test2) {//compare TRUE
-		printf("not same\n");
-	}
-	printf(test);
-	printf(test2);
-	test.clear();//delete string
-	test2.clear();//delete string
-	/*result:
-	same
-	not same
-	SanaeProject2021SanaeProject2021Plus
-	*/
-	return 0;
- 	}
+	d.connect_tcp("IP Address",port);
+
+	d.recv_tcp(1024);//return char*
+
+	d.send_tcp("send text");
+
+	d.~client();//destructor
+
  # Else functions(statistics.h)
 	sanae::sigma(unsigned int i, unsigned int N,T* data);
 
@@ -114,6 +113,8 @@ Version.2
 	
 # Else functions(SanaeUtil.h)
 	#classes
+	/*Not recommended*/
+	
 	・sanae::util::map<T1,T2> variable={T1typedata(key),T2typedata};
 	
 	variable.len();//return quanity.
@@ -133,6 +134,8 @@ Version.2
 	variable.start();//start
 	
 	variable.stop();//End and return result.
+	
+	/*Not recommended*/
 	
 	・sanae::util::arraylist
 	
