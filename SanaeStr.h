@@ -1,12 +1,13 @@
 #pragma once
+#ifndef INCLUDE_GUARD_SANAESTR_H
+#define INCLUDE_GUARD_SANAESTR_H
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#define SanaeStr
-/*null通常のNULLを使用すると正しく動作しません。*/
-#define null ""
+#include <stdexcept>
+#include <exception>
 
-#define sfree(d){free(d);d=NULL;}
 namespace sanae {
 /*
 *Copyright 2021 SanaeProject.ALL Rights Reserved.
@@ -14,31 +15,40 @@ namespace sanae {
 */
 	class str {
 	private:
+		//freeした後ポインタをNULLにします
+		template<typename T>
+		void sfree(T d) { free(d); d = NULL; }
+		//errorを返します
+		[[noreturn]] void mem_err() {
+			throw std::runtime_error("メモリ確保に失敗しました。");
+		}
+		//callocで確保します。 成功 true 失敗:false
+		int _calloc(char** to, size_t count, bool dofree = true) {
+			if (count == 0)return false;
+			if (dofree)sfree(*to);
+			*to = (char*)calloc(count,sizeof(char*));
+			return *to == NULL?false:true;
+		}
 		char* st = NULL;
 		/*mode:
 		true=コピー先の初期化
 		false=初期化なし*/
 		void copystring(char** to, const char** from, bool mode = true, bool dofree = false) {
 			if (mode) {
-				if (dofree) {sfree(*to);}
-				(*to) = (char*)malloc(sizeof(*from) * (strlen(*from) + 1));
-			}
-			if(*to==NULL) {
-				printf("\nMessage:メモリの確保に失敗しました。\n");
-				exit(0);
+				if (!_calloc(to, (strlen(*from) + 1)))mem_err();
 			}
 			strcpy_s(*to, strlen(*from)+1,*from);
 		}
 		void replace_c(int position,int len,char* to) {
-			char* str1 = (char*)malloc(sizeof(char*) * position);
+			char* str1 = NULL;
+			if (!_calloc(&str1, position, false))mem_err();
 			char* str2 = NULL;
-			char* str3 = (char*)malloc(sizeof(char*)*(strlen(st)+1-(position+len)));
+			char* str3 = NULL;
+			if (!_calloc(&str3, strlen(st) + 1 - (position + len), false))mem_err();
 			/*str1=前方文字列 str2=挿入文字列 str3=後方文字列*/
-			char* text = (char*)malloc(sizeof(char*)*(position+strlen(to)+strlen(st)+1-(position+len)+1));
+			char* text = NULL;
+			if(!_calloc(&text, position + strlen(to) + strlen(st) + 1 - (position + len) + 1),false)
 			/*text=str1+str2+str3*/
-			if (str1==NULL || str3==NULL || text==NULL) {
-				printf("\nMessage:メモリの確保に失敗しました。\n");exit(0);
-			}
 			//str1格納
 			for (int i = 0; i < position; i++) {
 				*(str1+i) = *(st + i);
@@ -51,9 +61,7 @@ namespace sanae {
 				*(str3 + i2) = *(st + i);
 			}
 			*(str3 + (strlen(str3) + 1)) = 0;
-			sfree(st);
-			st = (char*)malloc(sizeof(char*)*(strlen(str1)+strlen(str2)+strlen(str3)+3));
-			if (st == NULL) { printf("\nMessage:メモリの確保に失敗しました。\n"); exit(0); }
+			if (!_calloc(&st, strlen(str1) + strlen(str2) + strlen(str3) + 3))mem_err();
 			copystring(&st,(const char**)&str1,false);
 			strcat_s(st, strlen(str1) + strlen(str2) + strlen(str3) + 3,str2);
 			strcat_s(st, strlen(str1) + strlen(str2) + strlen(str3) + 3, str3); 
@@ -62,6 +70,10 @@ namespace sanae {
 			sfree(str3);
 		}
 	public:
+		//指定されたサイズ確保する
+		void secure(size_t count) {
+			if (!_calloc(&st, count))mem_err();
+		}
 		/*初期化*/
 		str(const char text[]) {
 			copystring(&st, &text);
@@ -70,6 +82,10 @@ namespace sanae {
 		str() {
 			const char* text = "";
 			copystring(&st, &text);
+		}
+		/*コピーコンストラクタ*/
+		str(const str& strc) {
+			copystring(&st,(const char**)&strc.st,true,true);
 		}
 		~str() {
 			this->clear();
@@ -85,11 +101,11 @@ namespace sanae {
 		virtual void operator =(const int d)final {
 			this->addint(d);
 		}
-		virtual void operator =(sanae::str d) final{
-			this->add(d.c_str());
-		}
 		/*その他処理*/
-		char& operator [](int t) {
+		char& operator [](unsigned int t) {
+			if (strlen(st)<=t) {
+				throw std::out_of_range("範囲外の値にアクセスしようとしました。");
+			}
 			return *(st+t);
 		}
 		void operator +=(const char* t){
@@ -135,13 +151,13 @@ namespace sanae {
 			return st;
 		}
 		char* add(const char* text){
-			char* copyst = (char*)malloc(sizeof(char*)*(strlen(st)+1));
-			if (copyst == NULL) { printf("\nMessage:メモリの確保に失敗しました。\n"); exit(0); }
+			char* copyst = NULL;
+			if (!_calloc(&copyst, strlen(st) + 1, false))mem_err();
 			copystring(&copyst,(const char**)&st);
 			sfree(st);
-			st = (char*)malloc(sizeof(char*)*(strlen(copyst)+strlen(text)+1));
+			st = NULL;
+			if (!_calloc(&st, strlen(copyst) + strlen(text) + 1, false))mem_err();
 			copystring(&st,(const char**)&copyst,false);
-			if(st==NULL){ printf("\nMessage:メモリの確保に失敗しました。\n"); exit(0); }
 			strcat_s(st, strlen(copyst) + strlen(text) + 2,text);
 			sfree(copyst);
 			return st;
@@ -154,7 +170,7 @@ namespace sanae {
 		}
 		int find(const char* to){
 			if (strstr(st, to)==0)return -1;
-			if (st == NULL) exit(-1);
+			if (st == NULL) return -1;
 			return strlen(st)-strlen(strstr(st,to));
 		}
 		int replace(const char* from,const char* to){
@@ -167,20 +183,13 @@ namespace sanae {
 		virtual void clear() {
 			sfree(st);
 		}
-		//指定したバイト数確保&すべてのデータを消去します。(calloc)
-		virtual void secure(unsigned int byte, bool clean = true) {
-			if (clean) {
-				sfree(st);
-			}
-			st = (char*)calloc(byte,sizeof(char*));
-		}
 		/*入力取得
 		mode:0 代入
 		mode:1 追記
 		*/
 		void input(size_t size = 1024, unsigned int mode = 0) {
-			char* t = (char*)malloc(size * sizeof(char*));
-			if (t == NULL) { printf("\nMessage:メモリの確保に失敗しました。\n");exit(0);}
+			char* t = NULL;
+			if (!_calloc(&t, size, false))mem_err();
 			scanf_s("%s", t, size);
 			if (mode == 0) {
 				copystring(&st, (const char**)&t, true, true);
@@ -194,3 +203,4 @@ namespace sanae {
 		}
 	};
 }
+#endif
