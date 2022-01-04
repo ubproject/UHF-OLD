@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdexcept>
 #include <exception>
+#include <vector>
 
 namespace sanae {
 /*
@@ -24,7 +25,7 @@ namespace sanae {
 		}
 		//callocで確保します。 成功 true 失敗:false
 		int _calloc(char** to, size_t count, bool dofree = true) {
-			if (count == 0)return false;
+			if (count == 0) {count += 1;}
 			if (dofree)sfree(*to);
 			*to = (char*)calloc(count,sizeof(char*));
 			return *to == NULL?false:true;
@@ -173,6 +174,15 @@ namespace sanae {
 			if (st == NULL) return -1;
 			return strlen(st)-strlen(strstr(st,to));
 		}
+		//配列番号を返します。
+		int find(const char to) {
+			for (int i = 0; i < strlen(st);i++) {
+				if (st[i]==to) {
+					return i;
+				}
+			}
+			return -1;
+		}
 		int replace(const char* from,const char* to){
 			const int position = this->find(from);
 			if (position == -1) { return -1; }
@@ -200,6 +210,40 @@ namespace sanae {
 				}
 			}
 			sfree(t);
+		}
+		//指定した文字で分割しstd::vectorで返します。
+		std::vector<str> split(const char split_text) {
+			std::vector<str> data;
+			int hear = this->find(split_text);
+			if (hear==-1) {
+				data.push_back(st);
+				return data;
+			}
+			while (1) {
+				int found = this->find(split_text);
+				char* deldata = NULL;
+				if (!_calloc(&deldata, found, false))mem_err();
+				for (int i = 0; i < found+1;i++) {
+					deldata[i] = st[i];
+				}
+				str adddata="";
+				adddata.add((const char*)deldata);
+				this->replace(adddata.c_str(),"");
+				data.push_back(adddata);
+				found = this->find(split_text);
+				if (found == -1) {
+					str g = "";
+					g.add(st);
+					g.replace(deldata,"");
+					data.push_back(g);
+					for (int i = 0; i < data.size();i++) {
+						if (data[i].find(split_text)!=-1) {
+							data[i][strlen(data[i].c_str())-1] = 0;
+						}
+					}
+					return data;
+				}
+			}
 		}
 	};
 }
