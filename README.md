@@ -1,7 +1,7 @@
 # Useful-headers
 Objective is make to "useful header for C++". <br>I like C++ language! and I want to more study C++ language so made this project.<br> Please tell me how to more good programming for C++ language....
 
-Version.2
+Version.3
 # Sanae::str
   	/*Define*/
   	sanae::str variable="";
@@ -25,7 +25,8 @@ Version.2
 	variable.clear();//free memory
 	
 	variable.~str();//Destructor
-
+	
+	variable.split(',');//return std::vector<sanae::str>
  # Else functions(SanaeNet.h)
 	#class
 	
