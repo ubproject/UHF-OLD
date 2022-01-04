@@ -96,7 +96,7 @@ Version.3
 	sanae::math::min(size_t,T*);//argument:(sizeof(array),array))
 	//return minimum of array.	
 	
-	sanae::math::min();//引数:(sanae::util::arraylist::.len(),arraylist)
+	sanae::math::min();//argument:(sanae::util::arraylist::.len(),arraylist)
 	//return minimum of sanae::util::arraylist.
 	
 	sanae::math::division_number_parts(int,int);//return multiplication,second argument is multiplication start point.
