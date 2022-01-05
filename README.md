@@ -27,6 +27,8 @@ Version.3
 	variable.~str();//Destructor
 	
 	variable.split(',');//return std::vector<sanae::str>
+	
+	variable.add_front("hello");//add to front
  # Else functions(SanaeNet.h)
 	#class
 	
