@@ -151,15 +151,27 @@ namespace sanae {
 			add(buf);
 			return st;
 		}
+		//追記します。
 		char* add(const char* text){
 			char* copyst = NULL;
 			if (!_calloc(&copyst, strlen(st) + 1, false))mem_err();
 			copystring(&copyst,(const char**)&st);
 			sfree(st);
-			st = NULL;
 			if (!_calloc(&st, strlen(copyst) + strlen(text) + 1, false))mem_err();
 			copystring(&st,(const char**)&copyst,false);
 			strcat_s(st, strlen(copyst) + strlen(text) + 2,text);
+			sfree(copyst);
+			return st;
+		}
+		//前方に追記します。
+		char* add_front(const char* text) {
+			char* copyst = NULL;
+			if (!_calloc(&copyst, strlen(st) + 1, false))mem_err();
+			copystring(&copyst, (const char**)&st);
+			sfree(st);
+			if (!_calloc(&st, strlen(copyst) + strlen(text) + 1, false))mem_err();
+			copystring(&st,&text,false);
+			strcat_s(st, strlen(copyst) + strlen(text) + 2, copyst);
 			sfree(copyst);
 			return st;
 		}
@@ -176,7 +188,7 @@ namespace sanae {
 		}
 		//配列番号を返します。
 		int find(const char to) {
-			for (int i = 0; i < strlen(st);i++) {
+			for (unsigned int i = 0; i < strlen(st);i++) {
 				if (st[i]==to) {
 					return i;
 				}
@@ -236,7 +248,7 @@ namespace sanae {
 					g.add(st);
 					g.replace(deldata,"");
 					data.push_back(g);
-					for (int i = 0; i < data.size();i++) {
+					for (unsigned int i = 0; i < data.size();i++) {
 						if (data[i].find(split_text)!=-1) {
 							data[i][strlen(data[i].c_str())-1] = 0;
 						}

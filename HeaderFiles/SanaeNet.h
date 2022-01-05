@@ -19,23 +19,12 @@ https://c-lang.net/%e3%83%9e%e3%83%ab%e3%83%81%e3%83%90%e3%82%a4%e3%83%88%e6%96%
 //inet_addr‚ðŽg—p‚·‚é—p
 #pragma warning(disable:4996) 
 namespace sanae {
-	//08039234183
 	/*
 	*Copyright 2021 SanaeProject.ALL Rights Reserved.
 	* Author Usagi
 	This header file did Implement of UDP and TCP for IPV4.
 	*/
 	namespace UDP {
-		/*TestCode:
-			Reader:
-				sanae::UDP::udp t(111, "?.?.?.?");
-				t.bind_udp();
-				sanae::str d = t.recv_udp();
-				printf("got:%s",d.c_str());
-			Sender:
-				sanae::UDP::udp t(111,"?.?.?.?");
-				t.send_udp("hello");
-		*/
 		class udp {
 		private:
 			bool _bind = false;
