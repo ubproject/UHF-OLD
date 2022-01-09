@@ -5,10 +5,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+/*ERROR用*/
 #include <stdexcept>
 #include <exception>
+/*splitメンバ用*/
 #include <vector>
 
+#pragma warning(disable:4267)
+#pragma warning(disable:4477)
 namespace sanae {
 /*
 *Copyright 2021 SanaeProject.ALL Rights Reserved.
@@ -16,14 +20,14 @@ namespace sanae {
 */
 	class str {
 	private:
-		//free������|�C���^��NULL�ɂ��܂�
+		//freeした後ポインタをNULLにします
 		template<typename T>
 		void sfree(T d) { free(d); d = NULL; }
-		//error��Ԃ��܂�
+		//errorを返します
 		[[noreturn]] void mem_err() {
-			throw std::runtime_error("�������m�ۂɎ��s���܂����B");
+			throw std::runtime_error("メモリ確保に失敗しました。");
 		}
-		//calloc�Ŋm�ۂ��܂��B ���� true ���s:false
+		//callocで確保します。 成功 true 失敗:false
 		int _calloc(char** to, size_t count, bool dofree = true) {
 			if (count == 0) {count += 1;}
 			if (dofree)sfree(*to);
@@ -32,32 +36,31 @@ namespace sanae {
 		}
 		char* st = NULL;
 		/*mode:
-		true=�R�s�[��̏�����
-		false=�������Ȃ�*/
-		void copystring(char** to, const char** from, bool mode = true, bool dofree = false) {
-			if (mode) {
-				if (!_calloc(to, (strlen(*from) + 1)))mem_err();
-			}
+		true=コピー先の初期化
+		false=初期化なし*/
+		void copystring(char** to, const char** from,bool dofree=true) {
+			if (dofree)sfree(*to);
+			if (!_calloc(to, (strlen(*from) + 1)))mem_err();
 			strcpy_s(*to, strlen(*from)+1,*from);
 		}
 		void replace_c(int position,int len,char* to) {
 			char* str1 = NULL;
-			if (!_calloc(&str1, position, false))mem_err();
+			if (!_calloc(&str1, position))mem_err();
 			char* str2 = NULL;
 			char* str3 = NULL;
-			if (!_calloc(&str3, strlen(st) + 1 - (position + len), false))mem_err();
-			/*str1=�O�������� str2=�}�������� str3=���������*/
+			if (!_calloc(&str3, strlen(st) + 1 - (position + len)))mem_err();
+			/*str1=前方文字列 str2=挿入文字列 str3=後方文字列*/
 			char* text = NULL;
-			if(!_calloc(&text, position + strlen(to) + strlen(st) + 1 - (position + len) + 1),false)
+			if (!_calloc(&text, position + strlen(to) + strlen(st) + 1 - (position + len) + 1))mem_err();
 			/*text=str1+str2+str3*/
-			//str1�i�[
+			//str1格納
 			for (int i = 0; i < position; i++) {
 				*(str1+i) = *(st + i);
 			}
 			*(str1+position) = 0;
-			//str2�i�[
-			copystring(&str2,(const char**)&to);
-			//str3�i�[
+			//str2格納
+			copystring(&str2,(const char**)&to,true);
+			//str3格納
 			for (unsigned int i = position + len, i2 = 0; i <= strlen(st);i++,i2++) {
 				*(str3 + i2) = *(st + i);
 			}
@@ -66,28 +69,29 @@ namespace sanae {
 			copystring(&st,(const char**)&str1,false);
 			strcat_s(st, strlen(str1) + strlen(str2) + strlen(str3) + 3,str2);
 			strcat_s(st, strlen(str1) + strlen(str2) + strlen(str3) + 3, str3); 
-			if (position>0) {sfree(str1);}//0�̏ꍇ�G���[���N���邽��1�ȏ�̏ꍇ����
+			if (position>0) {sfree(str1);}//0の場合エラーが起きるため1以上の場合許可
 			sfree(str2);
 			sfree(str3);
 		}
 	public:
-		//�w�肳�ꂽ�T�C�Y�m�ۂ���
+		//指定されたサイズ確保する
 		void secure(size_t count) {
 			if (!_calloc(&st, count))mem_err();
 		}
-		/*������*/
+		/*コンストラクタ*/
 		str(const char text[]) {
 			copystring(&st, &text);
 		}
-		/*������*/
+		/*コンストラクタ*/
 		str() {
 			const char* text = "";
 			copystring(&st, &text);
 		}
-		/*�R�s�[�R���X�g���N�^*/
+		/*コピーコンストラクタ*/
 		str(const str& strc) {
-			copystring(&st,(const char**)&strc.st,true,true);
+			copystring(&st, (const char**)&strc.st);
 		}
+		/*デストラクタ*/
 		~str() {
 			this->clear();
 		}
@@ -96,25 +100,40 @@ namespace sanae {
 		}
 		virtual void operator =(const char text[])final{
 			if (strcmp(st, text) != 0) {
-				copystring(&st, &text, true, true);
+				copystring(&st, &text, true);
 			}
 		}
 		virtual void operator =(const int d)final {
 			this->addint(d);
 		}
-		/*���̑�����*/
+		/*その他処理*/
 		char& operator [](unsigned int t) {
 			if (strlen(st)<=t) {
-				throw std::out_of_range("�͈͊O�̒l�ɃA�N�Z�X���悤�Ƃ��܂����B");
+				throw std::out_of_range("範囲外の値にアクセスしようとしました。");
 			}
 			return *(st+t);
 		}
+
 		void operator +=(const char* t){
 			this->add(t);
 		}
 		void operator +=(int i){
 			this->addint(i);
 		}
+
+		char* operator <<(const char* t) {
+			this->add(t);
+			return this->st;
+		}
+		char* operator <<(char t) {
+			this->addchr(t);
+			return this->st;
+		}
+		char* operator <<(int t) {
+			this->addint(t);
+			return this->st;
+		}
+
 		/*if*/
 		bool operator ==(const char text[]){
 			if (strcmp(st, text) == 0) { return 1; }
@@ -132,7 +151,7 @@ namespace sanae {
 			if (strcmp(st, t.c_str()) != 0) { return 1; }
 			return 0;
 		}
-		/*�ϊ��֐�*/
+		/*変換関数*/
 		operator const char* () {
 			return st;
 		}
@@ -140,22 +159,30 @@ namespace sanae {
 			return st;
 		}
 		operator int(){return atoi(st);}
-		/*char*�^�ŕԂ�*/
+		/*char*型で返します。*/
 		const char* c_str(){
 			return st;
 		}
-		/*������ǉ�*/
+		/*文字を追加*/
 		char* addchr(char d){
 			char buf[4];
 			snprintf(buf, 4, "%c", d);
 			add(buf);
 			return st;
 		}
-		//�ǋL���܂��B
+		//指定文字の個数を数えます。
+		int count(char t) {
+			int count = 0;
+			for (unsigned int i = 0; i < strlen(this->st);i++) {
+				if ((this->st[i]) == t)count++;
+			}
+			return count;
+		}
+		//追記します。
 		char* add(const char* text){
 			char* copyst = NULL;
 			if (!_calloc(&copyst, strlen(st) + 1, false))mem_err();
-			copystring(&copyst,(const char**)&st);
+			copystring(&copyst,(const char**)&st,false);
 			sfree(st);
 			if (!_calloc(&st, strlen(copyst) + strlen(text) + 1, false))mem_err();
 			copystring(&st,(const char**)&copyst,false);
@@ -163,7 +190,7 @@ namespace sanae {
 			sfree(copyst);
 			return st;
 		}
-		//�O���ɒǋL���܂��B
+		//前方に追記します。
 		char* add_front(const char* text) {
 			char* copyst = NULL;
 			if (!_calloc(&copyst, strlen(st) + 1, false))mem_err();
@@ -175,18 +202,25 @@ namespace sanae {
 			sfree(copyst);
 			return st;
 		}
+		//int型を追加します。
 		char* addint(const int i){
 			char buf[4];
 			snprintf(buf, 4, "%d", i);
 			add(buf);
 			return st;
 		}
+		/*検索文字列が存在しない場合は - 1を返します。
+		存在する場合は配列番号を返します。
+		*/
 		int find(const char* to){
 			if (strstr(st, to)==0)return -1;
 			if (st == NULL) return -1;
+			#pragma warning(disable:6387) 
 			return strlen(st)-strlen(strstr(st,to));
 		}
-		//�z��ԍ���Ԃ��܂��B
+		/*検索文字が存在しない場合は - 1を返します。
+		存在する場合は配列番号を返します。
+		*/
 		int find(const char to) {
 			for (unsigned int i = 0; i < strlen(st);i++) {
 				if (st[i]==to) {
@@ -195,6 +229,38 @@ namespace sanae {
 			}
 			return -1;
 		}
+		/*検索文字が存在しない場合は - 1を返します。
+		存在する場合は配列番号を返します。(後ろから探します)*/
+		int rfind(const char to) {
+			for(int i = strlen(this->st) - 1; i >= 0;i--) {
+				if (this->st[i]==to) {
+					return i;
+				}
+			}
+			return -1;
+		}
+		/*切り抜いて返します。 substr(切り抜く配列番号,そこから切り抜く個数)
+		第二引数で0が渡された場合切り抜く配列番号~最後まで切り抜きます。
+		*/
+		char* substr_c(unsigned int position,int count=0) {
+			count == 0 ? count = strlen(this->st) - position:count;
+			char* data = NULL;
+			if (!_calloc(&data, count + position + 1), false)mem_err();
+			for (unsigned int i = position,now=0; i < (count + position);i++,now++) {
+				data[now] = this->st[i];
+			}
+			return data;
+		}
+		/*切り抜いて返します。
+		第一引数~第二引数まで切り抜きます.
+		*/
+		char* substr(char start,char finish) {
+			int s = this->find(start);
+			int f = this->rfind(finish);
+			int count = f - s;
+			return this->substr_c(s+1,count-1);
+		}
+		/*文字と文字を入れ替えます。*/
 		int replace(const char* from,const char* to){
 			const int position = this->find(from);
 			if (position == -1) { return -1; }
@@ -202,19 +268,20 @@ namespace sanae {
 			replace_c(position,len,(char*)to);
 			return 0;
 		}
+		/*値を消去します。*/
 		virtual void clear() {
 			sfree(st);
 		}
-		/*���͎擾
-		mode:0 ���
-		mode:1 �ǋL
+		/*入力取得
+		mode:0 代入
+		mode:1 追記
 		*/
 		void input(size_t size = 1024, unsigned int mode = 0) {
 			char* t = NULL;
 			if (!_calloc(&t, size, false))mem_err();
 			scanf_s("%s", t, size);
 			if (mode == 0) {
-				copystring(&st, (const char**)&t, true, true);
+				copystring(&st, (const char**)&t, true);
 			}
 			else if (mode == 1) {
 				for (unsigned int i = 0; i < strlen(t); i++) {
@@ -223,7 +290,7 @@ namespace sanae {
 			}
 			sfree(t);
 		}
-		//�w�肵�������ŕ�����std::vector�ŕԂ��܂��B
+		//指定した文字で分割しstd::vectorで返します。
 		std::vector<str> split(const char split_text) {
 			std::vector<str> data;
 			int hear = this->find(split_text);
