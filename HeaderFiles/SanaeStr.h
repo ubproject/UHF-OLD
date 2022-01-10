@@ -44,10 +44,8 @@ namespace sanae {
 			strcpy_s(*to, strlen(*from)+1,*from);
 		}
 		void copystring(char** to, const char** from, bool dofree = true) {
-			printf("[%p]%sをfreeします。",*to,*to);
 			if (dofree)sfree(*to);
 			if (!_calloc(to, (strlen(*from) + 1)))mem_err();
-			printf("%sで%dバイト確保しました.\n",*from, (strlen(*from) + 1));
 			strcpy_s(*to, strlen(*from) + 1, *from);
 		}
 		void replace_c(int position,int len,char* to) {
