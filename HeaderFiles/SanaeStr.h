@@ -22,7 +22,7 @@ namespace sanae {
 	private:
 		//freeした後ポインタをNULLにします
 		template<typename T>
-		void sfree(T d) { free(d); d = NULL; }
+		void sfree(T* d) { free(d); d = NULL; }
 		//errorを返します
 		[[noreturn]] void mem_err() {
 			throw std::runtime_error("メモリ確保に失敗しました。");
@@ -38,10 +38,17 @@ namespace sanae {
 		/*mode:
 		true=コピー先の初期化
 		false=初期化なし*/
-		void copystring(char** to, const char** from,bool dofree=true) {
+		void copystring(char** to,char** from,bool dofree=true) {
 			if (dofree)sfree(*to);
 			if (!_calloc(to, (strlen(*from) + 1)))mem_err();
 			strcpy_s(*to, strlen(*from)+1,*from);
+		}
+		void copystring(char** to, const char** from, bool dofree = true) {
+			printf("[%p]%sをfreeします。",*to,*to);
+			if (dofree)sfree(*to);
+			if (!_calloc(to, (strlen(*from) + 1)))mem_err();
+			printf("%sで%dバイト確保しました.\n",*from, (strlen(*from) + 1));
+			strcpy_s(*to, strlen(*from) + 1, *from);
 		}
 		void replace_c(int position,int len,char* to) {
 			char* str1 = NULL;
@@ -59,14 +66,14 @@ namespace sanae {
 			}
 			*(str1+position) = 0;
 			//str2格納
-			copystring(&str2,(const char**)&to,true);
+			copystring(&str2,&to,true);
 			//str3格納
 			for (unsigned int i = position + len, i2 = 0; i <= strlen(st);i++,i2++) {
 				*(str3 + i2) = *(st + i);
 			}
 			*(str3 + (strlen(str3) + 1)) = 0;
 			if (!_calloc(&st, strlen(str1) + strlen(str2) + strlen(str3) + 3))mem_err();
-			copystring(&st,(const char**)&str1,false);
+			copystring(&st,&str1,false);
 			strcat_s(st, strlen(str1) + strlen(str2) + strlen(str3) + 3,str2);
 			strcat_s(st, strlen(str1) + strlen(str2) + strlen(str3) + 3, str3); 
 			if (position>0) {sfree(str1);}//0の場合エラーが起きるため1以上の場合許可
@@ -89,7 +96,8 @@ namespace sanae {
 		}
 		/*コピーコンストラクタ*/
 		str(const str& strc) {
-			copystring(&st, (const char**)&strc.st);
+			char* test = strc.st;
+			copystring(&st, &test);
 		}
 		/*デストラクタ*/
 		~str() {
@@ -98,13 +106,15 @@ namespace sanae {
 		size_t len() {
 			return strlen(st);
 		}
-		virtual void operator =(const char text[])final{
-			if (strcmp(st, text) != 0) {
-				copystring(&st, &text, true);
-			}
+		virtual str& operator =(const char&)final{
+			return *this;
 		}
-		virtual void operator =(const int d)final {
+		virtual str& operator =(str&) {
+			return *this;
+		}
+		virtual str& operator =(const int d)final {
 			this->addint(d);
+			return *this;
 		}
 		/*その他処理*/
 		char& operator [](unsigned int t) {
@@ -114,42 +124,44 @@ namespace sanae {
 			return *(st+t);
 		}
 
-		void operator +=(const char* t){
+		str& operator +=(const char* t){
 			this->add(t);
+			return *this;
 		}
-		void operator +=(int i){
+		str& operator +=(int i){
 			this->addint(i);
+			return *this;
 		}
 
-		char* operator <<(const char* t) {
+		str& operator <<(const char* t) {
 			this->add(t);
-			return this->st;
+			return *this;
 		}
-		char* operator <<(char t) {
+		str& operator <<(char t) {
 			this->addchr(t);
-			return this->st;
+			return *this;
 		}
-		char* operator <<(int t) {
+		str& operator <<(int t) {
 			this->addint(t);
-			return this->st;
+			return *this;
 		}
 
 		/*if*/
 		bool operator ==(const char text[]){
-			if (strcmp(st, text) == 0) { return 1; }
-			return 0;
+			if (strcmp(st, text) == 0) { return true; }
+			return false;
 		}
-		bool operator ==(str t){
-			if (strcmp(st, t.c_str()) == 0) { return 1; }
-			return 0;
+		bool operator ==(str& t){
+			if (strcmp(st, t.c_str()) == 0) { return true; }
+			return false;
 		}
 		bool operator !=(const char text[]){
-			if (strcmp(st, text) != 0) { return 1; }
-			return 0;
+			if (strcmp(st, text) != 0) { return true; }
+			return false;
 		}
-		bool operator !=(str t){
-			if (strcmp(st, t.c_str()) != 0) { return 1; }
-			return 0;
+		bool operator !=(str& t){
+			if (strcmp(st, t.c_str()) != 0) { return true; }
+			return false;
 		}
 		/*変換関数*/
 		operator const char* () {
@@ -164,11 +176,11 @@ namespace sanae {
 			return st;
 		}
 		/*文字を追加*/
-		char* addchr(char d){
+		str& addchr(char d){
 			char buf[4];
 			snprintf(buf, 4, "%c", d);
 			add(buf);
-			return st;
+			return *this;
 		}
 		//指定文字の個数を数えます。
 		int count(char t) {
@@ -179,35 +191,35 @@ namespace sanae {
 			return count;
 		}
 		//追記します。
-		char* add(const char* text){
+		str& add(const char* text){
 			char* copyst = NULL;
 			if (!_calloc(&copyst, strlen(st) + 1, false))mem_err();
-			copystring(&copyst,(const char**)&st,false);
+			copystring(&copyst,&st,false);
 			sfree(st);
 			if (!_calloc(&st, strlen(copyst) + strlen(text) + 1, false))mem_err();
-			copystring(&st,(const char**)&copyst,false);
+			copystring(&st,&copyst,false);
 			strcat_s(st, strlen(copyst) + strlen(text) + 2,text);
 			sfree(copyst);
-			return st;
+			return *this;
 		}
 		//前方に追記します。
-		char* add_front(const char* text) {
+		str& add_front(const char* text) {
 			char* copyst = NULL;
 			if (!_calloc(&copyst, strlen(st) + 1, false))mem_err();
-			copystring(&copyst, (const char**)&st);
+			copystring(&copyst, &st);
 			sfree(st);
 			if (!_calloc(&st, strlen(copyst) + strlen(text) + 1, false))mem_err();
 			copystring(&st,&text,false);
 			strcat_s(st, strlen(copyst) + strlen(text) + 2, copyst);
 			sfree(copyst);
-			return st;
+			return *this;
 		}
 		//int型を追加します。
-		char* addint(const int i){
+		str& addint(const int i){
 			char buf[4];
 			snprintf(buf, 4, "%d", i);
 			add(buf);
-			return st;
+			return *this;
 		}
 		/*検索文字列が存在しない場合は - 1を返します。
 		存在する場合は配列番号を返します。
@@ -281,7 +293,7 @@ namespace sanae {
 			if (!_calloc(&t, size, false))mem_err();
 			scanf_s("%s", t, size);
 			if (mode == 0) {
-				copystring(&st, (const char**)&t, true);
+				copystring(&st, &t, true);
 			}
 			else if (mode == 1) {
 				for (unsigned int i = 0; i < strlen(t); i++) {
