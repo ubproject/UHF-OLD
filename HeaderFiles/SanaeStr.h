@@ -40,7 +40,7 @@ namespace sanae {
 			throw std::runtime_error("メモリ確保に失敗しました。");
 		}
 		//callocで確保します。 成功 true 失敗:false
-		int _calloc(char** to, size_t count, bool dofree = true) {
+		bool _calloc(char** to, size_t count, bool dofree = true) {
 			if (count == 0) {count += 1;}
 			if (dofree)sfree(*to);
 			*to = (char*)calloc(count,sizeof(char*));
@@ -52,13 +52,13 @@ namespace sanae {
 		false=初期化なし*/
 		void copystring(char** to,char** from,bool dofree=true) {
 			if (dofree)sfree(*to);
-			if (!_calloc(to, (strlen(*from) + 1),false))mem_err();
-			strcpy_s(*to, strlen(*from)+1,*from);
+			if (!_calloc(to, (strlen(*from) + 3),false))mem_err();
+			strcpy_s(*to, strlen(*from)+3,*from);
 		}
 		void copystring(char** to, const char** from, bool dofree = true) {
 			if (dofree)sfree(*to);
-			if (!_calloc(to, (strlen(*from) + 1)))mem_err();
-			strcpy_s(*to, strlen(*from) + 1, *from);
+			if (!_calloc(to, (strlen(*from) + 3),false))mem_err();
+			strcpy_s(*to, strlen(*from) + 3, *from);
 		}
 		void replace_c(int position,int len,char* to) {
 			char* str1 = NULL;
@@ -111,12 +111,13 @@ namespace sanae {
 		}
 		/*デストラクタ*/
 		~str() {
-			this->clear();
+			free(st);
+			st = NULL;
 		}
 		size_t len() {
 			return strlen(st);
 		}
-		virtual str& operator =(const char text[])final {
+		str& operator =(const char text[]) {
 			copystring(&st, &text);
 			return *this;
 		}
@@ -127,7 +128,7 @@ namespace sanae {
 		}
 		/*その他処理*/
 		char& operator [](int t) {
-			if (strlen(st)<=t) {
+			if (strlen(st)<=(unsigned int)t) {
 				throw std::out_of_range("範囲外の値にアクセスしようとしました。");
 			}
 			return *(st+t);
@@ -140,7 +141,6 @@ namespace sanae {
 			this->addint(i);
 			return *this;
 		}
-
 		str& operator <<(const char* t) {
 			this->add(t);
 			return *this;
@@ -259,19 +259,18 @@ namespace sanae {
 			}
 			return -1;
 		}
+		char* for_substr = NULL;
+
 		/*切り抜いて返します。 substr(切り抜く配列番号,そこから切り抜く個数)
 		第二引数で0が渡された場合切り抜く配列番号~最後まで切り抜きます。
 		*/
 		const char* substr_c(unsigned int position,int count=0) {
 			count == 0 ? count = strlen(this->st) - position:count;
-			char* data = NULL;
-			if (!_calloc(&data, count + position + 1), false)mem_err();
+			if (!_calloc(&for_substr, count + position + 1), false)mem_err();
 			for (unsigned int i = position,now=0; i < (count + position);i++,now++) {
-				data[now] = this->st[i];
+				for_substr[now] = this->st[i];
 			}
-			const char* d = {data};
-			sfree(data);
-			return d;
+			return for_substr;
 		}
 		/*切り抜いて返します。
 		第一引数~第二引数まで切り抜きます.
@@ -280,7 +279,7 @@ namespace sanae {
 			int s = this->find(start);
 			int f = this->rfind(finish);
 			int count = f - s;
-			return this->substr_c(s+1,count-1);
+			return this->substr_c(s,count+1);
 		}
 		/*文字と文字を入れ替えます。*/
 		int replace(const char* from,const char* to){
@@ -293,6 +292,7 @@ namespace sanae {
 		/*値を消去します。*/
 		virtual void clear() {
 			sfree(st);
+			sfree(for_substr);
 		}
 		/*入力取得
 		mode:0 代入
