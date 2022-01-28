@@ -5,29 +5,41 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-/*ERRORç”¨*/
+/*ERROR—p*/
 #include <stdexcept>
 #include <exception>
-/*splitãƒ¡ãƒ³ãƒç”¨*/
+/*splitƒƒ“ƒo—p*/
 #include <vector>
 
 #pragma warning(disable:4267)
 #pragma warning(disable:4477)
-namespace sanae {
-/*
+
+/*-----------------------------------------------
+* Project:SanaeProject-UsefulHeadersProject
+* Dev:SanaeProject
+* Function:
+this headers have "String type and mathematics
+functions and else many functions and types.".
 *Copyright 2021 SanaeProject.ALL Rights Reserved.
-* Author Usagi
-*/
+-----------------------------------------------*/
+namespace sanae {
+	/*-----------------------------------------------
+	* Project:SanaeProject-UsefulHeadersProject
+	* Dev:SanaeProject
+	* Function:
+	This header has String type.
+	*Copyright 2021 SanaeProject.ALL Rights Reserved.
+	-----------------------------------------------*/
 	class str {
 	private:
-		//freeã—ãŸå¾Œãƒã‚¤ãƒ³ã‚¿ã‚’NULLã«ã—ã¾ã™
+		//free‚µ‚½Œãƒ|ƒCƒ“ƒ^‚ğNULL‚É‚µ‚Ü‚·
 		template<typename T>
 		void sfree(T* d) { free(d); d = NULL; }
-		//errorã‚’è¿”ã—ã¾ã™
+		//error‚ğ•Ô‚µ‚Ü‚·
 		[[noreturn]] void mem_err() {
-			throw std::runtime_error("ãƒ¡ãƒ¢ãƒªç¢ºä¿ã«å¤±æ•—ã—ã¾ã—ãŸã€‚");
+			throw std::runtime_error("ƒƒ‚ƒŠŠm•Û‚É¸”s‚µ‚Ü‚µ‚½B");
 		}
-		//callocã§ç¢ºä¿ã—ã¾ã™ã€‚ æˆåŠŸ true å¤±æ•—:false
+		//calloc‚ÅŠm•Û‚µ‚Ü‚·B ¬Œ÷ true ¸”s:false
 		int _calloc(char** to, size_t count, bool dofree = true) {
 			if (count == 0) {count += 1;}
 			if (dofree)sfree(*to);
@@ -36,11 +48,11 @@ namespace sanae {
 		}
 		char* st = NULL;
 		/*mode:
-		true=ã‚³ãƒ”ãƒ¼å…ˆã®åˆæœŸåŒ–
-		false=åˆæœŸåŒ–ãªã—*/
+		true=ƒRƒs[æ‚Ì‰Šú‰»
+		false=‰Šú‰»‚È‚µ*/
 		void copystring(char** to,char** from,bool dofree=true) {
 			if (dofree)sfree(*to);
-			if (!_calloc(to, (strlen(*from) + 1)))mem_err();
+			if (!_calloc(to, (strlen(*from) + 1),false))mem_err();
 			strcpy_s(*to, strlen(*from)+1,*from);
 		}
 		void copystring(char** to, const char** from, bool dofree = true) {
@@ -54,18 +66,18 @@ namespace sanae {
 			char* str2 = NULL;
 			char* str3 = NULL;
 			if (!_calloc(&str3, strlen(st) + 1 - (position + len)))mem_err();
-			/*str1=å‰æ–¹æ–‡å­—åˆ— str2=æŒ¿å…¥æ–‡å­—åˆ— str3=å¾Œæ–¹æ–‡å­—åˆ—*/
+			/*str1=‘O•û•¶š—ñ str2=‘}“ü•¶š—ñ str3=Œã•û•¶š—ñ*/
 			char* text = NULL;
 			if (!_calloc(&text, position + strlen(to) + strlen(st) + 1 - (position + len) + 1))mem_err();
 			/*text=str1+str2+str3*/
-			//str1æ ¼ç´
+			//str1Ši”[
 			for (int i = 0; i < position; i++) {
 				*(str1+i) = *(st + i);
 			}
 			*(str1+position) = 0;
-			//str2æ ¼ç´
+			//str2Ši”[
 			copystring(&str2,&to,true);
-			//str3æ ¼ç´
+			//str3Ši”[
 			for (unsigned int i = position + len, i2 = 0; i <= strlen(st);i++,i2++) {
 				*(str3 + i2) = *(st + i);
 			}
@@ -74,54 +86,52 @@ namespace sanae {
 			copystring(&st,&str1,false);
 			strcat_s(st, strlen(str1) + strlen(str2) + strlen(str3) + 3,str2);
 			strcat_s(st, strlen(str1) + strlen(str2) + strlen(str3) + 3, str3); 
-			if (position>0) {sfree(str1);}//0ã®å ´åˆã‚¨ãƒ©ãƒ¼ãŒèµ·ãã‚‹ãŸã‚1ä»¥ä¸Šã®å ´åˆè¨±å¯
+			if (position>0) {sfree(str1);}//0‚Ìê‡ƒGƒ‰[‚ª‹N‚«‚é‚½‚ß1ˆÈã‚Ìê‡‹–‰Â
 			sfree(str2);
 			sfree(str3);
 		}
 	public:
-		//æŒ‡å®šã•ã‚ŒãŸã‚µã‚¤ã‚ºç¢ºä¿ã™ã‚‹
+		//w’è‚³‚ê‚½ƒTƒCƒYŠm•Û‚·‚é
 		void secure(size_t count) {
 			if (!_calloc(&st, count))mem_err();
 		}
-		/*ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿*/
+		/*ƒRƒ“ƒXƒgƒ‰ƒNƒ^*/
 		str(const char text[]) {
 			copystring(&st, &text);
 		}
-		/*ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿*/
+		/*ƒRƒ“ƒXƒgƒ‰ƒNƒ^*/
 		str() {
 			const char* text = "";
 			copystring(&st, &text);
 		}
-		/*ã‚³ãƒ”ãƒ¼ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿*/
+		/*ƒRƒs[ƒRƒ“ƒXƒgƒ‰ƒNƒ^*/
 		str(const str& strc) {
 			char* test = strc.st;
 			copystring(&st, &test);
 		}
-		/*ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿*/
+		/*ƒfƒXƒgƒ‰ƒNƒ^*/
 		~str() {
 			this->clear();
 		}
 		size_t len() {
 			return strlen(st);
 		}
-		virtual str& operator =(const char&)final{
+		virtual str& operator =(const char text[])final {
+			copystring(&st, &text);
 			return *this;
 		}
-		virtual str& operator =(str&) {
+		str& operator =(const str& strc) {
+			char* test = strc.st;
+			copystring(&st, &test);
 			return *this;
 		}
-		virtual str& operator =(const int d)final {
-			this->addint(d);
-			return *this;
-		}
-		/*ãã®ä»–å‡¦ç†*/
-		char& operator [](unsigned int t) {
+		/*‚»‚Ì‘¼ˆ—*/
+		char& operator [](int t) {
 			if (strlen(st)<=t) {
-				throw std::out_of_range("ç¯„å›²å¤–ã®å€¤ã«ã‚¢ã‚¯ã‚»ã‚¹ã—ã‚ˆã†ã¨ã—ã¾ã—ãŸã€‚");
+				throw std::out_of_range("”ÍˆÍŠO‚Ì’l‚ÉƒAƒNƒZƒX‚µ‚æ‚¤‚Æ‚µ‚Ü‚µ‚½B");
 			}
 			return *(st+t);
 		}
-
 		str& operator +=(const char* t){
 			this->add(t);
 			return *this;
@@ -161,7 +171,7 @@ namespace sanae {
 			if (strcmp(st, t.c_str()) != 0) { return true; }
 			return false;
 		}
-		/*å¤‰æ›é–¢æ•°*/
+		/*•ÏŠ·ŠÖ”*/
 		operator const char* () {
 			return st;
 		}
@@ -169,18 +179,18 @@ namespace sanae {
 			return st;
 		}
 		operator int(){return atoi(st);}
-		/*char*å‹ã§è¿”ã—ã¾ã™ã€‚*/
+		/*char*Œ^‚Å•Ô‚µ‚Ü‚·B*/
 		const char* c_str(){
 			return st;
 		}
-		/*æ–‡å­—ã‚’è¿½åŠ */
+		/*•¶š‚ğ’Ç‰Á*/
 		str& addchr(char d){
 			char buf[4];
 			snprintf(buf, 4, "%c", d);
 			add(buf);
 			return *this;
 		}
-		//æŒ‡å®šæ–‡å­—ã®å€‹æ•°ã‚’æ•°ãˆã¾ã™ã€‚
+		//w’è•¶š‚ÌŒÂ”‚ğ”‚¦‚Ü‚·B
 		int count(char t) {
 			int count = 0;
 			for (unsigned int i = 0; i < strlen(this->st);i++) {
@@ -188,7 +198,7 @@ namespace sanae {
 			}
 			return count;
 		}
-		//è¿½è¨˜ã—ã¾ã™ã€‚
+		//’Ç‹L‚µ‚Ü‚·B
 		str& add(const char* text){
 			char* copyst = NULL;
 			if (!_calloc(&copyst, strlen(st) + 1, false))mem_err();
@@ -200,7 +210,7 @@ namespace sanae {
 			sfree(copyst);
 			return *this;
 		}
-		//å‰æ–¹ã«è¿½è¨˜ã—ã¾ã™ã€‚
+		//‘O•û‚É’Ç‹L‚µ‚Ü‚·B
 		str& add_front(const char* text) {
 			char* copyst = NULL;
 			if (!_calloc(&copyst, strlen(st) + 1, false))mem_err();
@@ -212,15 +222,15 @@ namespace sanae {
 			sfree(copyst);
 			return *this;
 		}
-		//intå‹ã‚’è¿½åŠ ã—ã¾ã™ã€‚
-		str& addint(const int i){
-			char buf[4];
-			snprintf(buf, 4, "%d", i);
-			add(buf);
+		//intŒ^‚ğ’Ç‰Á‚µ‚Ü‚·B
+		str& addint(int i){
+			char buf[12];
+			snprintf(buf, 12, "%d", i);
+			add((const char*)buf);
 			return *this;
 		}
-		/*æ¤œç´¢æ–‡å­—åˆ—ãŒå­˜åœ¨ã—ãªã„å ´åˆã¯ - 1ã‚’è¿”ã—ã¾ã™ã€‚
-		å­˜åœ¨ã™ã‚‹å ´åˆã¯é…åˆ—ç•ªå·ã‚’è¿”ã—ã¾ã™ã€‚
+		/*ŒŸõ•¶š—ñ‚ª‘¶İ‚µ‚È‚¢ê‡‚Í - 1‚ğ•Ô‚µ‚Ü‚·B
+		‘¶İ‚·‚éê‡‚Í”z—ñ”Ô†‚ğ•Ô‚µ‚Ü‚·B
 		*/
 		int find(const char* to){
 			if (strstr(st, to)==0)return -1;
@@ -228,8 +238,8 @@ namespace sanae {
 			#pragma warning(disable:6387) 
 			return strlen(st)-strlen(strstr(st,to));
 		}
-		/*æ¤œç´¢æ–‡å­—ãŒå­˜åœ¨ã—ãªã„å ´åˆã¯ - 1ã‚’è¿”ã—ã¾ã™ã€‚
-		å­˜åœ¨ã™ã‚‹å ´åˆã¯é…åˆ—ç•ªå·ã‚’è¿”ã—ã¾ã™ã€‚
+		/*ŒŸõ•¶š‚ª‘¶İ‚µ‚È‚¢ê‡‚Í - 1‚ğ•Ô‚µ‚Ü‚·B
+		‘¶İ‚·‚éê‡‚Í”z—ñ”Ô†‚ğ•Ô‚µ‚Ü‚·B
 		*/
 		int find(const char to) {
 			for (unsigned int i = 0; i < strlen(st);i++) {
@@ -239,8 +249,8 @@ namespace sanae {
 			}
 			return -1;
 		}
-		/*æ¤œç´¢æ–‡å­—ãŒå­˜åœ¨ã—ãªã„å ´åˆã¯ - 1ã‚’è¿”ã—ã¾ã™ã€‚
-		å­˜åœ¨ã™ã‚‹å ´åˆã¯é…åˆ—ç•ªå·ã‚’è¿”ã—ã¾ã™ã€‚(å¾Œã‚ã‹ã‚‰æ¢ã—ã¾ã™)*/
+		/*ŒŸõ•¶š‚ª‘¶İ‚µ‚È‚¢ê‡‚Í - 1‚ğ•Ô‚µ‚Ü‚·B
+		‘¶İ‚·‚éê‡‚Í”z—ñ”Ô†‚ğ•Ô‚µ‚Ü‚·B(Œã‚ë‚©‚ç’T‚µ‚Ü‚·)*/
 		int rfind(const char to) {
 			for(int i = strlen(this->st) - 1; i >= 0;i--) {
 				if (this->st[i]==to) {
@@ -249,28 +259,30 @@ namespace sanae {
 			}
 			return -1;
 		}
-		/*åˆ‡ã‚ŠæŠœã„ã¦è¿”ã—ã¾ã™ã€‚ substr(åˆ‡ã‚ŠæŠœãé…åˆ—ç•ªå·,ãã“ã‹ã‚‰åˆ‡ã‚ŠæŠœãå€‹æ•°)
-		ç¬¬äºŒå¼•æ•°ã§0ãŒæ¸¡ã•ã‚ŒãŸå ´åˆåˆ‡ã‚ŠæŠœãé…åˆ—ç•ªå·~æœ€å¾Œã¾ã§åˆ‡ã‚ŠæŠœãã¾ã™ã€‚
+		/*Ø‚è”²‚¢‚Ä•Ô‚µ‚Ü‚·B substr(Ø‚è”²‚­”z—ñ”Ô†,‚»‚±‚©‚çØ‚è”²‚­ŒÂ”)
+		‘æ“ñˆø”‚Å0‚ª“n‚³‚ê‚½ê‡Ø‚è”²‚­”z—ñ”Ô†~ÅŒã‚Ü‚ÅØ‚è”²‚«‚Ü‚·B
 		*/
-		char* substr_c(unsigned int position,int count=0) {
+		const char* substr_c(unsigned int position,int count=0) {
 			count == 0 ? count = strlen(this->st) - position:count;
 			char* data = NULL;
 			if (!_calloc(&data, count + position + 1), false)mem_err();
 			for (unsigned int i = position,now=0; i < (count + position);i++,now++) {
 				data[now] = this->st[i];
 			}
-			return data;
+			const char* d = {data};
+			sfree(data);
+			return d;
 		}
-		/*åˆ‡ã‚ŠæŠœã„ã¦è¿”ã—ã¾ã™ã€‚
-		ç¬¬ä¸€å¼•æ•°~ç¬¬äºŒå¼•æ•°ã¾ã§åˆ‡ã‚ŠæŠœãã¾ã™.
+		/*Ø‚è”²‚¢‚Ä•Ô‚µ‚Ü‚·B
+		‘æˆêˆø”~‘æ“ñˆø”‚Ü‚ÅØ‚è”²‚«‚Ü‚·.
 		*/
-		char* substr(char start,char finish) {
+		const char* substr(char start,char finish) {
 			int s = this->find(start);
 			int f = this->rfind(finish);
 			int count = f - s;
 			return this->substr_c(s+1,count-1);
 		}
-		/*æ–‡å­—ã¨æ–‡å­—ã‚’å…¥ã‚Œæ›¿ãˆã¾ã™ã€‚*/
+		/*•¶š‚Æ•¶š‚ğ“ü‚ê‘Ö‚¦‚Ü‚·B*/
 		int replace(const char* from,const char* to){
 			const int position = this->find(from);
 			if (position == -1) { return -1; }
@@ -278,13 +290,13 @@ namespace sanae {
 			replace_c(position,len,(char*)to);
 			return 0;
 		}
-		/*å€¤ã‚’æ¶ˆå»ã—ã¾ã™ã€‚*/
+		/*’l‚ğÁ‹‚µ‚Ü‚·B*/
 		virtual void clear() {
 			sfree(st);
 		}
-		/*å…¥åŠ›å–å¾—
-		mode:0 ä»£å…¥
-		mode:1 è¿½è¨˜
+		/*“ü—Íæ“¾
+		mode:0 ‘ã“ü
+		mode:1 ’Ç‹L
 		*/
 		void input(size_t size = 1024, unsigned int mode = 0) {
 			char* t = NULL;
@@ -300,7 +312,7 @@ namespace sanae {
 			}
 			sfree(t);
 		}
-		//æŒ‡å®šã—ãŸæ–‡å­—ã§åˆ†å‰²ã—std::vectorã§è¿”ã—ã¾ã™ã€‚
+		//w’è‚µ‚½•¶š‚Å•ªŠ„‚µstd::vector‚Å•Ô‚µ‚Ü‚·B
 		std::vector<str> split(const char split_text) {
 			std::vector<str> data;
 			int hear = this->find(split_text);

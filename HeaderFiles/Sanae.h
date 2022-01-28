@@ -6,10 +6,16 @@
 #include "SanaeMath.h"
 #include "statistics.h"
 #include "SanaeNet.h"
-#define sfree(ptr){free(ptr);ptr=NULL;}
-/*
+
+/*-----------------------------------------------
+* Project:SanaeProject-UsefulHeadersProject
+* Dev:SanaeProject
+* Function:
+this headers have "String type and mathematics 
+functions and else many functions and types.".
 *Copyright 2021 SanaeProject.ALL Rights Reserved.
-*Author Usagi
-*/
-using namespace sanae;
+-----------------------------------------------*/
+namespace sanae{}
+ using namespace sanae;
+
 #endif

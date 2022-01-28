@@ -5,29 +5,170 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <vector>
 #include <stdexcept>
 #include <exception>
-/*
-*Copyright 2021 SanaeProject.ALL Rights Reserved.
-*Author Usagi
-*/
+
 namespace sanae {
+	/*-----------------------------------------------
+	* Project:SanaeProject-UsefulHeadersProject
+	* Dev:SanaeProject
+	* Function:
+	This header have many utility programs. 
+	*Copyright 2021 SanaeProject.ALL Rights Reserved.
+	-----------------------------------------------*/
 	namespace util {
-		/*
-		可変長配列です。
-		注意:
-		初期化する際は第一引数に入れる個数を入力してください。
-		例:
-		sanae::util::arraylist<int> test;//ok
-		注意:test[0]と登録なしでデータを引き出すと-1が返されます。
+		//補数を利用したバイナリで表示、計算します。(int)
+		class binary {
+		private:
+			bool minus_binary = false;
+			std::vector<bool> data;
+			sanae::str data_binary = "";
+			//complement1(Inversion)
+			void complement_1() {
+				for (unsigned int i = 0; i < data.size(); i++)data[i] = data[i] ? false : true;
+			}
+			//complement2(plus1)
+			void complement_2() {
+				bool advance = true;
+				for (int i = data.size() - 1; i >= 0;i--) {
+					if (data[i]&&advance) {
+						data[i] = false;
+						advance = true;
+					}
+					else if(advance) {
+						data[i] = true;
+						advance = false;
+						break;
+					}
+				}
+			}
+			//Convert decimal to binary
+			void to_binary(int d) {
+				minus_binary = false;
+				if (d < 0) {
+					minus_binary = true;
+					d *= -1;
+				}
+				else {
+					minus_binary = false;
+				}
+				while (1) {
+					data.push_back(d%2);
+					d= d / 2;
+					if (d==1||d==0) {
+						data.push_back(d);
+						break;
+					}
+				}
+				for (unsigned int i = data.size(); i < 3;i++) {
+					data.push_back(0);
+				}
+				data.push_back(0);
+				std::reverse(data.begin(),data.end());
+				if (minus_binary) {
+					complement_1();
+					complement_2();
+				}
+			}
+			//Convert binary to decimal
+			int to_decimal() {
+				bool minus = false;
+				if (data[0]) {
+					complement_1();
+					complement_2();
+					minus = true;
+				}
+				int data_decimal = 0;
+				for (int i = data.size() - 1,count=0; i >= 0;i--,count++) {
+					int plus_data = 0;
+					if (data[i]) {
+						if (count==0) {
+							plus_data = 1;
+						}
+						else {
+							plus_data = 1;
+							for (int i = 0; i < count;i++) {
+								plus_data *= 2;
+							}
+						}
+						data_decimal += plus_data;
+					}
+				}
+				if (minus) {
+					data_decimal *= -1;
+				}
+				return data_decimal;
+			}
+		public:
+			//Pass binary value.
+			const char* binary_num() {
+				for (int i:data) {
+					data_binary.addint(i);
+				}
+				return data_binary.c_str();
+			}
+			//Operator
+			bool operator [](unsigned int count) {
+				if ((data.size()-1)<count) {
+					throw std::runtime_error("範囲外の値にアクセスしようとしました。");
+				}
+				return data[count];
+			}
+			void operator =(const binary& t) {
+				data.erase(data.begin(), data.end());
+				for (int i : t.data) {
+					data.push_back(i);
+				}
+				if (t.minus_binary) {
+					complement_1();
+					complement_2();
+				}
+			}
+			int operator +(int d) {
+				int s = to_decimal() + d;
+				return s;
+			}
+			int operator +(binary& d) {
+				int s = to_decimal() + d.decimal();
+				return s;
+			}
+			int operator -(int d) {
+				int s = to_decimal() - d;
+				return s;
+			}
+			int operator -(binary& d) {
+				int s = to_decimal() - d.decimal();
+				return s;
+			}
+			//Constructor
+			binary(int d) {
+				to_binary(d);
+			}
+			//Copyconstructor
+			binary(const binary & t) {
+				data.erase(data.begin(), data.end());
+				for (int i : t.data) {
+					data.push_back(i);
+				}
+				if (t.minus_binary) {
+					complement_1();
+					complement_2();
+				}
+			}
+			//Destructor
+			~binary() {
+				data.~vector();
+				minus_binary = false;
+			}
+			//Pass decimal value.
+			int decimal() {
+				return to_decimal();
+			}
 
-		sanae::util::arraylist<int> test={3,1,2,3};//ok
-		sanae::util::arraylist<int> test={2,1,2,3};//1,2のみ読み取られる(危険)
-		sanae::util::arraylist<int> test={4,1,2,3};//危険なので絶対にやめてください。
-
-		sanae::util::arraylist<int> test={入れる個数,値...};
-		*/
-		template <typename T>class [[deprecated("この型はSanae::str型や配列型で使用するとバグが発生してしまています。原因が特定・改良できるまで使用しないでください")]] arraylist {
+		};
+		//sanae::util::arraylist<int> test={入れる個数,値...};
+		template<typename T> class [[deprecated("この型はSanae::str型や配列型で使用するとバグが発生してしまています。\n原因が特定・改良できるまで使用しないでください。\n使用する場合はNOT_ERROR_SANAEを定義してください。")]] arraylist {
 		private:
 			T* data = NULL;
 			int datalen = 0;

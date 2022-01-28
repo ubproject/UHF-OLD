@@ -2,11 +2,19 @@
 #ifndef INCLUDE_GUARD_STATISTICS_H
 #define INCLUDE_GUARD_STATISTICS_H
 namespace sanae{
+	/*Pass sum*/
 	template<typename T> inline T sigma(unsigned int i, unsigned int N,T* data) {
 		T d = 0;
 		for (i-=1; i < N; i++) { d += data[i]; }
 		return d;
 	}
+	/*-----------------------------------------------
+	* Project:SanaeProject-UsefulHeadersProject
+	* Dev:SanaeProject
+	* Function:
+	This header can find the regression line.
+	*Copyright 2021 SanaeProject.ALL Rights Reserved.
+	-----------------------------------------------*/
 	namespace statistics {
 		//’P‰ñ‹A’¼ü‚ð‹‚ß‚Ü‚·B
 		template<typename X,typename Y>class Regressionline {

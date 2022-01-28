@@ -18,15 +18,24 @@ https://c-lang.net/%e3%83%9e%e3%83%ab%e3%83%81%e3%83%90%e3%82%a4%e3%83%88%e6%96%
 #ifdef INCLUDE_GUARD_SANAESTR_H
 //inet_addrを使用する用
 #pragma warning(disable:4996) 
+//throw
+#pragma warning(disable:6387) 
+#pragma warning(disable:4267)
+#pragma warning(disable:4244)
 namespace sanae {
-	/*
+	/*-----------------------------------------------
+	* Project:SanaeProject-UsefulHeadersProject
+	* Dev:SanaeProject
+	* Function:
+	This header can use TCP and UDP.
 	*Copyright 2021 SanaeProject.ALL Rights Reserved.
-	* Author Usagi
-	This header file did Implement of UDP and TCP for IPV4.
-	*/
+	-----------------------------------------------*/
 	namespace UDP {
 		class udp {
 		private:
+			void err(const char* t) {
+				throw std::runtime_error(t);
+			}
 			bool _bind = false;
 			WSAData wsaData;
 			int sock;
@@ -38,34 +47,39 @@ namespace sanae {
 				return (NULL);
 			}
 		public:
-			const char* GetMyIp() {
+			char* GetMyIp() {
 				WSADATA wsadata;
 				if (WSAStartup(MAKEWORD(1, 1), &wsadata) != 0) {
-					throw std::runtime_error("WSAStartupに失敗しました。");
+					err("WSAStartupに失敗しました。\nIPアドレス取得に失敗しました。");
 				}
 				char hostname[256];
 				if (gethostname(hostname, sizeof(hostname)) != 0) {
-					throw std::runtime_error("IPアドレス取得に失敗しました。");
+					err("IPアドレス取得に失敗しました。");
 				}
 				HOSTENT* hostend = gethostbyname(hostname);
 				if (hostend == NULL) {
-					throw std::runtime_error("IPアドレス取得に失敗しました。");
+					err("IPアドレス取得に失敗しました。");
 				}
 				IN_ADDR inaddr;
+				#pragma warning(disable:6011) 
 				memcpy(&inaddr, hostend->h_addr_list[0], 4);
 				strcpy_s(HOSTIPADD, inet_ntoa(inaddr));
 				WSACleanup();
+				return HOSTIPADD;
 			}
 			char HOSTIPADD[16] = {0};
 			char IPADD[16] = { 0 };
 			//ブロッキングする:0 ブロッキングしない:1
 			u_long stop = 0;
-			/*sanae::UDP::udp 変数(ポート番号,通信先IPアドレス)*/
-			udp(u_short port,sanae::str ip) {
+			/*sanae::UDP::udp 変数(ポート番号,通信先IPアドレス)
+			stop:
+			ブロッキングする:0 ブロッキングしない:1
+			*/
+			udp(u_short port,sanae::str ip,u_long stop=0) {
 				WSACleanup();
 				int error=WSAStartup(MAKEWORD(2, 0), &wsaData);
 				if (error != 0) {
-					throw std::runtime_error("WSAStartupに失敗しました。");
+					err("WSAStartupに失敗しました。");
 				}
 				sock = socket(AF_INET, SOCK_DGRAM, 0);
 				addr.sin_family = AF_INET;
@@ -94,14 +108,19 @@ namespace sanae {
 				}
 				_bind = false;
 				char* buf = (char*)calloc(size, sizeof(char*));
-				if (buf==NULL) {
-					if (buf == NULL) { throw std::runtime_error("メモリ確保に失敗しました。"); }
-				}
+				if (buf == NULL) { err("メモリ確保に失敗しました。"); }
 				recv(sock, buf, size, 0);
 				return buf;
 			}
 		};
 	}
+	/*-----------------------------------------------
+	* Project:SanaeProject-UsefulHeadersProject
+	* Dev:SanaeProject
+	* Function:
+	This header can use TCP and UDP.
+	*Copyright 2021 SanaeProject.ALL Rights Reserved.
+	-----------------------------------------------*/
 	namespace TCP {
 		/*server用クラス(IPV4)*/
 		class server {
@@ -120,6 +139,9 @@ namespace sanae {
 				}
 				return (NULL);
 			}
+			void err(const char* t) {
+				throw std::runtime_error(t);
+			}
 		public:
 			char IPADD[16] = {0};
 			//初期設定を行います
@@ -127,7 +149,7 @@ namespace sanae {
 				started = true;
 				int error = WSAStartup(MAKEWORD(2, 0), &wsaData);
 				if (error!=0) {
-					throw std::runtime_error("WSAStartupに失敗しました。");
+					err("WSAStartupに失敗しました。");
 				}
 				sock0 = socket(AF_INET, SOCK_STREAM, 0);
 				addr.sin_family = AF_INET;
@@ -152,7 +174,7 @@ namespace sanae {
 			//受信
 			char* recv_tcp(size_t datasize) {
 				char* d = (char*)calloc(datasize,sizeof(char*));
-				if (d == NULL) { throw std::runtime_error("メモリ確保に失敗しました。"); }
+				if (d == NULL) { err("メモリ確保に失敗しました。"); }
 				int n = recv(sock,d, datasize, 0);
 				return d;
 			}
@@ -170,13 +192,16 @@ namespace sanae {
 			struct sockaddr_in server;
 			SOCKET sock;
 			sanae::str data;
+			void err(const char* t) {
+				throw std::runtime_error(t);
+			}
 		public:
 			//初期化します
 			client() {
 				started = true;
 				int error=WSAStartup(MAKEWORD(2, 0), &wsaData);
 				if (error!=0) {
-					throw std::runtime_error("WSAStartupに失敗しました。");
+					err("WSAStartupに失敗しました。");
 				}
 				sock = socket(AF_INET, SOCK_STREAM, 0);
 				server.sin_family = AF_INET;
@@ -197,7 +222,7 @@ namespace sanae {
 			//受信します
 			char* recv_tcp(size_t datasize) {
 				char* d = (char*)calloc(datasize, sizeof(char*));
-				if (d == NULL) { throw std::runtime_error("メモリ確保に失敗しました。"); }
+				if (d == NULL) { err("メモリ確保に失敗しました。"); }
 				int n = recv(sock, d, datasize, 0);
 				return d;
 			}

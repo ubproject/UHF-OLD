@@ -1,19 +1,24 @@
 #pragma once
+#ifndef INCLUDE_GUARD_SANAEMATH_H
+#define INCLUDE_GUARD_SANAEMATH_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <vector>
-#define SanaeMath
+
 //二乗します
 template<class T>inline T squared(T data) { return(data * data); };
 //絶対値にします
 template<class T>inline T absv(T data) { return data < 0 ? -(data) : data; };
 namespace sanae {
-	/*
+	/*-----------------------------------------------
+	* Project:SanaeProject-UsefulHeadersProject
+	* Dev:SanaeProject
+	* Function:
+	This header have many math functions.
 	*Copyright 2021 SanaeProject.ALL Rights Reserved.
-	* Author Usagi
-	*/
-	/*数学関係の関数群です。*/
+	-----------------------------------------------*/
 	namespace math {
 		/*桁数を返す*/
 		unsigned int digit(int t) {
@@ -130,7 +135,7 @@ namespace sanae {
 		}
 		/*平面ベクトルのクラスです。*/
 		template<typename T>
-		class vector {
+		class vector_math {
 		private:
 			sanae::util::pair<T, T> data;
 		public:
@@ -139,24 +144,24 @@ namespace sanae {
 				return number==0?data.first():data.second();
 			}
 			//+
-			void operator +=(sanae::math::vector<T> _data) {
+			void operator +=(sanae::math::vector_math<T> _data) {
 				data={ data.first() + _data[0],data.second() + _data[1] };
 			}
-			sanae::util::pair<T, T> operator +(sanae::math::vector<T> _data) {
+			sanae::util::pair<T, T> operator +(sanae::math::vector_math<T> _data) {
 				return {data.first()+_data[0],data.second()+_data[1]};
 			}
 			//-
-			void operator -=(sanae::math::vector<T> _data) {
+			void operator -=(sanae::math::vector_math<T> _data) {
 				data = { data.first() - _data[0],data.second() - _data[1] };
 			}
-			sanae::util::pair<T, T> operator -(sanae::math::vector<T> _data) {
+			sanae::util::pair<T, T> operator -(sanae::math::vector_math<T> _data) {
 				return {data.first()-_data[0],data.second()-_data[1]};
 			}
 			//*
-			void operator *=(sanae::math::vector<T> _data) {
+			void operator *=(sanae::math::vector_math<T> _data) {
 				data = { data.first() * _data[0],data.second() * _data[1] };
 			}
-			sanae::util::pair<T, T> operator *(sanae::math::vector<T> _data) {
+			sanae::util::pair<T, T> operator *(sanae::math::vector_math<T> _data) {
 				return {data.first() * _data[0],data.second() * _data[1]};
 			}
 			/*最小値にします。*/
@@ -175,12 +180,12 @@ namespace sanae {
 			/*X軸の値を返します。*/
 			T getY() { return data.second(); }
 			/*ベクトルの成分を代入してください。*/
-			vector(T _d1, T _d2){data.set(_d1,_d2);}
+			vector_math(T _d1, T _d2){data.set(_d1,_d2);}
 			/*ベクトルの成分を代入してください。*/
-			vector(sanae::util::pair<T,T> _data):data(_data){}
+			vector_math(sanae::util::pair<T,T> _data):data(_data){}
 			/*代入されたベクトルの2データの成分を自動で計算して代入します。
 			{{ベクトルの始点}{ベクトルの終点}}*/
-			vector(sanae::util::pair<T, T> _data1,sanae::util::pair<T,T> _data2){
+			vector_math(sanae::util::pair<T, T> _data1,sanae::util::pair<T,T> _data2){
 				this->data={_data2.first()-_data1.first(),_data2.second()-_data1.second()};
 			}
 			double volume(bool calculation_root=true) {
@@ -196,17 +201,16 @@ namespace sanae {
 			double* a2 = (double*)malloc(sizeof(double) * count);
 			if (a1 == NULL || a2 == NULL) { printf("\nメモリの確保に失敗しました。\n"); exit(0); }
 			//偏差積を出す
-			sanae::util::arraylist<double> a3;
+			std::vector<double> a3;
 			//偏差を出すd1,d2
 			for (int i = 0; i < count; i++) { a1[i] = (d1[i] - data1); }
 			for (int i = 0; i < count; i++){a2[i] = (d2[i] - data2);}
 			//偏差の積を出す
-			for (int i = 0; i < count; i++) { a3.add(a1[i] * a2[i]); }
+			for (int i = 0; i < count; i++) { a3.push_back(a1[i] * a2[i]); }
 			double _d = 0;
-			for (int i = 0; i < a3.len(); i++) { _d += a3[i]; }
+			for (int i = 0; i < a3.size(); i++) { _d += a3[i]; }
 			free(a1); free(a2);
-			_d = _d / a3.len();
-			a3.clear();
+			_d = _d / a3.size();
 			data1 = sanae::math::array_deviation(count, d1);
 			data2 = sanae::math::array_deviation(count, d2);
 			return _d / (data1 * data2);
@@ -297,3 +301,4 @@ namespace sanae {
 #endif
 	}
 }
+#endif
